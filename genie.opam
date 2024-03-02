@@ -31,5 +31,5 @@ build: [
 ]
 dev-repo: "git+https://github.com/username/reponame.git"
 pin-depends: [
-  ["bindgen.dev" "git+https://github.com/ocaml-sys/ocaml-bindgen.git"]
+  ["bindgen.dev" "git+https://github.com/omnisci3nce/ocaml-bindgen.git"]
 ]
