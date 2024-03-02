@@ -8,11 +8,15 @@ int main() {
     Djinn my_app;
     djinn_try_init(&my_app);
 
+    vec3 bg = BACKGROUND;
+    vec3 cyan = (vec3) { 0.063, 0.8, 0.835 };
+
     while (!glfwWindowShouldClose(my_app.render.window)) {
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        vec3 bg = BACKGROUND;
         glClearColor(bg.x, bg.y, bg.z, 1.0f);
+
+        // Try drawing a rectangle
 
         glfwSwapBuffers(my_app.render.window);
         glfwPollEvents();
