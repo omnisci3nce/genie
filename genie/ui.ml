@@ -10,10 +10,10 @@ type widget_cache = (widget_id, widget_state) Hashtbl.t
     the drawing parameterised over the user's data model *)
 type 'model drawable =
   | Widget of {
-      name : string;
+      id : widget_id;
       size : unit -> unit; (* TODO *)
       draw : rect -> widget_cache -> unit;
       handle_interaction :
         Input.mouse_input -> Input.key_input -> widget_cache -> 'model -> 'model;
     }
-  | Flex of { dir : flex_direction }
+  | Flex of { dir : flex_direction; children: 'model drawable array }

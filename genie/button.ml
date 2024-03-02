@@ -8,9 +8,9 @@ let draw_button widget_id _text _box cache =
 let handle_button _widget_id _apply_onclick _mouse_input _key_input _cache model =
   model
 
-let make ?(text = "") name onclick : 'model drawable =
+let make ?(text = "") id onclick : 'model drawable =
   Widget {
-    name = name;
+    id = id;
     size = (fun _ -> ());
     draw = draw_button "" text;
     handle_interaction = handle_button "" onclick
