@@ -18,30 +18,25 @@ module RGB = struct
 end
 
 
+let background = Vec3f.make 0.102 0.102 0.114
+let foreground = Vec3f.make 0.902 0.886 0.941
+
+(* Normal Colors *)
 let cyan = Vec3f.make 0.063 0.8 0.835
+let green = Vec3f.make 0.133 0.804 0.545
+let magenta = Vec3f.make 0.639 0.294 0.69
+let red = Vec3f.make 0.878 0.235 0.235
+let white = Vec3f.make 0.796 0.796 0.796
+let yellow = Vec3f.make 0.933 0.753 0.318
+let black = Vec3f.make 0.231 0.231 0.231
+let blue = Vec3f.make 0.4 0.545 0.886
 
-(* TEMPORARY COLOUR PALETTE
-Background: (0.102, 0.102, 0.114)
-Foreground: (0.902, 0.886, 0.941)
-
-Normal Colors:
-
-Cyan: (0.063, 0.8, 0.835)
-Green: (0.133, 0.804, 0.545)
-Magenta: (0.639, 0.294, 0.69)
-Red: (0.878, 0.235, 0.235)
-White: (0.796, 0.796, 0.796)
-Yellow: (0.933, 0.753, 0.318)
-Black: (0.231, 0.231, 0.231)
-Blue: (0.4, 0.545, 0.886)
-
-Bright Colors:
-
-Black: (0.4, 0.404, 0.435)
-Blue: (0.506, 0.651, 0.992)
-Cyan: (0.302, 0.918, 0.918)
-Green: (0.247, 0.902, 0.639)
-Magenta: (0.686, 0.686, 1.0)
-Red: (0.941, 0.514, 0.349)
-White: (1.0, 1.0, 1.0)
-Yellow: (0.984, 0.984, 0.482) *)
+(* Bright Colors *)
+let bright_black = Vec3f.make 0.4 0.404 0.435
+let bright_blue = Vec3f.make 0.506 0.651 0.992
+let bright_cyan = Vec3f.make 0.302 0.918 0.918
+let bright_green = Vec3f.make 0.247 0.902 0.639
+let bright_magenta = Vec3f.make 0.686 0.686 1.0
+let bright_red = Vec3f.make 0.941 0.514 0.349
+let bright_white = Vec3f.make 1.0 1.0 1.0
+let bright_yellow = Vec3f.make 0.984 0.984 0.482

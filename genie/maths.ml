@@ -1,4 +1,4 @@
-(** Base functions that a 2D Vector must support *)
+(** Base functions that a Vector must support *)
 module type Vector = sig
   type t
 
@@ -81,6 +81,5 @@ end
 type rect = { pos : Vec2i.t; extents : Vec2i.t }
 
 (* TODO: These are not necessary yet *)
-type vec3 = { x : float; y : float; z : float }
-type mat3x3 = { x_axis : vec3; y_axis : vec3; z_axis : vec3 }
+type mat3x3 = { x_axis : Vec3f.t; y_axis : Vec3f.t; z_axis : Vec3f.t }
 type mat2x2 = { x_axis : Vec2f.t; y_axis : Vec2f.t }

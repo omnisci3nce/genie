@@ -1,4 +1,4 @@
 (executable
  (public_name basic)
  (name main)
- (libraries genie))
+ (libraries genie djinn))
