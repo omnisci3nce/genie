@@ -5,3 +5,15 @@ type nonrec vec2f = {
 type nonrec vec2i = {
   x: int ;
   y: int }
+external string_from_file : path:char -> char = "caml_string_from_file"
+type nonrec renderer = {
+  vbo: u32 ;
+  vao: u32 ;
+  ibo: u32 ;
+  rect_shader: u32 }
+external renderer_init : ren:renderer -> bool = "caml_renderer_init"
+external shader_create_separate :
+  frag_shader:char -> vert_shader:char -> u32 = "caml_shader_create_separate"
+type nonrec djinn = {
+  render: renderer }
+external djinn_try_init : dj:djinn -> unit = "caml_djinn_try_init"

@@ -1,5 +1,15 @@
 #pragma once
+#include <ctype.h>
+#include <errno.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define SCR_WIDTH 1000
+#define SCR_HEIGHT 800
 
 /// --- Type aliases
 
@@ -23,3 +33,37 @@ typedef struct vec2f {
 typedef struct vec2i {
     int x, y;
 } vec2i;
+
+typedef struct vec3 {
+    float x, y, z;
+} vec3;
+
+/// --- Colors
+
+#define FOREGROUND ((vec3){ 0.95, 0.95, 0.95 })
+#define BACKGROUND ((vec3){ 0.1098, 0.0980, 0.0902 })
+
+/// --- File IO
+
+static const char* string_from_file(const char *path) {
+  FILE *f = fopen(path, "rb");
+  if (f == NULL) {
+    // ERROR("Error reading file: %s. errno: %d", path, errno);
+    return NULL;
+  }
+  if (ferror(f)) {
+    // ERROR("Error reading file: %s. errno: %d", path, errno);
+    return NULL;
+  }
+  fseek(f, 0, SEEK_END);
+  long fsize = ftell(f);
+  rewind(f);
+
+  char *string = malloc(fsize + 1);
+  fread(string, fsize, 1, f);
+  fclose(f);
+
+  string[fsize] = '\0';
+
+  return string;
+}
