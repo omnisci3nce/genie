@@ -12,7 +12,7 @@ bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.13"}
-  "ocaml-bindgen"
+  "bindgen"
   "odoc" {with-doc}
 ]
 build: [
@@ -31,5 +31,5 @@ build: [
 ]
 dev-repo: "git+https://github.com/username/reponame.git"
 pin-depends: [
-  ["ocaml-bindgen.dev" "git+https://github.com/ocaml-sys/ocaml-bindgen.git"]
+  ["bindgen.dev" "git+https://github.com/ocaml-sys/ocaml-bindgen.git"]
 ]

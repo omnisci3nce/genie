@@ -19,7 +19,7 @@
  (name genie)
  (synopsis "Simple GUI framwork in OCaml")
  (description "A longer description")
- (depends ocaml dune ocaml-bindgen)
+ (depends ocaml dune bindgen)
  (tags
   (topics "to describe" your project)))
 

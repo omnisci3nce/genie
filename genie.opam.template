@@ -1,3 +1,3 @@
 pin-depends: [
-  ["ocaml-bindgen.dev" "git+https://github.com/ocaml-sys/ocaml-bindgen.git"]
+  ["bindgen.dev" "git+https://github.com/ocaml-sys/ocaml-bindgen.git"]
 ]

@@ -1,2 +1,3 @@
 (library
- (name genie))
+ (name genie)
+ (libraries bindgen))
