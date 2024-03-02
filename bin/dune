@@ -1,0 +1,4 @@
+(executable
+ (public_name genie)
+ (name main)
+ (libraries genie))
