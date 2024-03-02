@@ -2,6 +2,10 @@
 
 > We let the genie out of the bottle, but you get to keep the 3 wishes. Simple, GUI, OCaml.
 
+A simple, functional style GUI framework. 
+
+All third-party dependencies are licensed under their own license.
+
 ## Contributing
 
 Right now you need to pin my fork of ocaml-bindgen manually with
