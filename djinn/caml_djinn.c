@@ -8,8 +8,8 @@
 #include <caml/unixsupport.h>
 vec2f* caml_vec2f_of_value(value caml_x) {
   vec2f* x = malloc(sizeof(struct vec2f));
-  x->x = Double_val(Field(caml_x, 0));
-  x->y = Double_val(Field(caml_x, 1));
+  x->x = Int_val(Field(caml_x, 0));
+  x->y = Int_val(Field(caml_x, 1));
   return x;
 }
 
@@ -17,8 +17,8 @@ value caml_vec2f_to_value(struct vec2f* x) {
   CAMLparam0();
   CAMLlocal1(caml_x);
   caml_x = caml_alloc_tuple(2);
-  Store_field(caml_x, 0, caml_copy_double(x->x));
-  Store_field(caml_x, 1, caml_copy_double(x->y));
+  Store_field(caml_x, 0, Val_int(x->x));
+  Store_field(caml_x, 1, Val_int(x->y));
   CAMLreturn(caml_x);
 }
 
@@ -35,6 +35,20 @@ value caml_vec2i_to_value(struct vec2i* x) {
   caml_x = caml_alloc_tuple(2);
   Store_field(caml_x, 0, Val_int(x->x));
   Store_field(caml_x, 1, Val_int(x->y));
+  CAMLreturn(caml_x);
+}
+
+test_struct* caml_test_struct_of_value(value caml_x) {
+  test_struct* x = malloc(sizeof(struct test_struct));
+  x->n = Int_val(Field(caml_x, 0));
+  return x;
+}
+
+value caml_test_struct_to_value(struct test_struct* x) {
+  CAMLparam0();
+  CAMLlocal1(caml_x);
+  caml_x = caml_alloc_tuple(1);
+  Store_field(caml_x, 0, Val_int(x->n));
   CAMLreturn(caml_x);
 }
 

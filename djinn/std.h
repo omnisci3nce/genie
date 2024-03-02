@@ -17,7 +17,7 @@ typedef double f64;
 /// --- Maths
 
 typedef struct vec2f {
-    float x, y;
+    f32 x, y;
 } vec2f;
 
 typedef struct vec2i {
