@@ -1,0 +1,41 @@
+(library
+  (name djinn)
+ (foreign_stubs
+  (language c)
+  (names djinn caml_djinn)
+  (flags
+   (:standard -O2))))
+
+(rule
+ (alias all)
+ (targets
+   djinn.ml
+   caml_djinn.c
+  )
+ (deps djinn.h std.h)
+ (action
+  (run
+   %{bin:ocaml-bindgen} djinn.h djinn))
+ (mode
+  (promote (until-clean))))
+
+; (executable
+;   (name main)
+;  (foreign_stubs
+;   (language c)
+;   (names doggo caml_doggo)
+;   (flags
+;    (:standard -O2))))
+
+; (rule
+;  (alias all)
+;  (targets
+;    doggo.ml
+;    caml_doggo.c
+;   )
+;  (deps doggo.h)
+;  (action
+;   (run
+;    %{bin:ocaml-bindgen} doggo.h doggo))
+;  (mode
+;   (promote (until-clean))))
