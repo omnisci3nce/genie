@@ -31,8 +31,8 @@ bool caml_window_should_close() {
   CAMLreturn(result);
 }
 
-params* caml_params_of_value(value caml_x) {
-  params* x = malloc(sizeof(struct params));
+box_params* caml_box_params_of_value(value caml_x) {
+  box_params* x = malloc(sizeof(struct box_params));
   x->x = Int_val(Field(caml_x, 0));
   x->y = Int_val(Field(caml_x, 1));
   x->width = Int_val(Field(caml_x, 2));
@@ -43,7 +43,7 @@ params* caml_params_of_value(value caml_x) {
   return x;
 }
 
-value caml_params_to_value(struct params* x) {
+value caml_box_params_to_value(struct box_params* x) {
   CAMLparam0();
   CAMLlocal1(caml_x);
   caml_x = caml_alloc_tuple(7);
@@ -59,7 +59,7 @@ value caml_params_to_value(struct params* x) {
 
 void caml_draw_rectangle(value caml_params) {
   CAMLparam1(caml_params);
-  params* params = caml_params_of_value(caml_params);
+  box_params* params = caml_box_params_of_value(caml_params);
   draw_rectangle(params);
   CAMLreturn0;
 }

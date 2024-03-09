@@ -45,6 +45,8 @@ typedef struct vec3 {
 
 /// --- File IO
 
+// TODO: return some sort of file/string result struct with an is_valid field
+
 static const char* string_from_file(const char *path) {
   FILE *f = fopen(path, "rb");
   if (f == NULL) {
@@ -60,7 +62,13 @@ static const char* string_from_file(const char *path) {
   rewind(f);
 
   char *string = malloc(fsize + 1);
-  fread(string, fsize, 1, f);
+  size_t result = fread(string, fsize, 1, f);
+  if (result != 1) {
+    printf("Unexpected EOF\n");
+    // TODO: Error logs
+  } else if (ferror(f)) {
+    // TODO: Error logs
+  }
   fclose(f);
 
   string[fsize] = '\0';
