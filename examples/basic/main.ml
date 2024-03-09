@@ -39,8 +39,8 @@ let rec main_loop ui widget_cache model n =
   | true -> n
   | false ->
       Djinn.frame_begin ();
-      let mouse_input = Djinn_wrapper.get_mouse_input () in
-      Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout;
+      let mouse_input = Input.get_mouse_input () in
+      (* Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout; *)
       let new_model, new_widget_cache =
         Ui.update_ui mouse_input { keys = [] (* TODO *) } widget_cache model ui
       in

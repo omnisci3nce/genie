@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SCR_WIDTH 1000
-#define SCR_HEIGHT 800
+#define SCR_WIDTH 2000
+#define SCR_HEIGHT 1600
 
 /// --- Type aliases
 

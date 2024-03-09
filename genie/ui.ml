@@ -23,7 +23,8 @@ type 'model ui_node =
 
 let rec get_size node = match node with
   | Widget { computed_size; _ } -> let r =  rect_of_simple_rect computed_size in
-      Printf.printf "Button rect: %s\n" (Maths.show_rect r); r
+      (* Printf.printf "Button rect: %s\n" (Maths.show_rect r); r *)
+      r
   | Flex { children; _ } -> List.fold_left (fun acc child -> Maths.grow_rect acc (get_size child)) zero_rect children
 
 let rec pre_order_traversal f node =

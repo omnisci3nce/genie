@@ -10,5 +10,6 @@ void djinn_try_init(int* flags) {
         printf("Failed to initialise Renderer\n");
         exit(1);
     }
+    g_djinn.input.window = g_djinn.render.window;
     printf("Successfully initialised Renderer!\n");
 }

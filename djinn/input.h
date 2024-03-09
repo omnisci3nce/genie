@@ -5,12 +5,20 @@
 
 struct GLFWwindow;
 
+typedef struct mouse_state {
+    bool prev_left_btn_pressed;
+    bool left_btn_pressed;
+} mouse_state;
+
 typedef struct input_state {
     struct GLFWwindow* window;
+    mouse_state mouse;
     bool pressed_keys[KEYS_MAX];
     bool just_pressed_keys[KEYS_MAX];
     bool just_released_keys[KEYS_MAX];
 } input_state;
+
+void input_update(input_state* input);
 
 typedef enum keycode {
     ESC

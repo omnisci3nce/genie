@@ -11,6 +11,11 @@ bool renderer_init(renderer *ren)
 {
     glfwInit();
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
     // glfw window creation
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT,
                                           "Genie Demo App", NULL, NULL);
@@ -24,10 +29,8 @@ bool renderer_init(renderer *ren)
 
     glfwMakeContextCurrent(ren->window);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwGetWindowContentScale(ren->window, &ren->window_x_scale, &ren->window_y_scale);
+    printf("Window scale %f %f\n", ren->window_x_scale, ren->window_y_scale);
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -79,7 +82,7 @@ void draw_rectangle(params *params)
         .g = params->g,
         .b = params->b,
     };
-    printf("Pushing draw call for rectangle (x: %d) (y: %d) (w: %d) (h: %d)\n", cmd.x, cmd.y, cmd.width, cmd.height);
+    // printf("Pushing draw call for rectangle (x: %d) (y: %d) (w: %d) (h: %d)\n", cmd.x, cmd.y, cmd.width, cmd.height);
     draw_rect_darray_push(g_djinn.render.draw_cmd_buf, cmd);
 }
 
@@ -143,21 +146,22 @@ void ui_draw() {
     f32_darray_free(vertices);
 }
 
-struct dummy;
-void frame_begin(struct dummy *d)
+void frame_begin()
 {
+    Djinn dj = g_djinn;
+    input_update(&g_djinn.input);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(BACKGROUND.x, BACKGROUND.y, BACKGROUND.z, 1.0f);
 }
-void frame_end(struct dummy *d)
+void frame_end()
 {
     ui_draw();
     glfwSwapBuffers(g_djinn.render.window);
     glfwPollEvents();
     usleep(16 * 1000);
 }
-bool window_should_close(struct dummy *d)
+bool window_should_close()
 {
     return !glfwWindowShouldClose(g_djinn.render.window); // confusing but bools are flipped I think
 }

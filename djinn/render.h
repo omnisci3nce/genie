@@ -15,6 +15,8 @@ DECL_TYPED_ARRAY(draw_rect)
 
 typedef struct renderer {
     struct GLFWwindow* window;
+    float window_x_scale;
+    float window_y_scale;
     u32 vbo, vao, ibo;
     u32 rect_shader;
     draw_rect_darray* draw_cmd_buf;
