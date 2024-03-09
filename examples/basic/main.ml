@@ -1,6 +1,21 @@
 open Genie
 
-type example_model = { boolean : bool }
+type example_model = {
+  boolean : bool;
+      (* topleft : bool; *)
+      (* topright : bool;
+         bottomleft : bool;
+         bottomright : bool; *)
+}
+
+let initial_model =
+  {
+    boolean = false;
+    (* topleft = false; *)
+    (* topright = false;
+       bottomleft = false;
+       bottomright = false *)
+  }
 
 let _build_ui_tree =
   let click_me =
@@ -8,30 +23,28 @@ let _build_ui_tree =
         print_endline "You did it! You clicked me!";
         { boolean = not model.boolean })
   in
-  ({ boolean = false }, Ui.(Flex { dir = Row; children = [| click_me |] }))
-
-let d : Djinn.dummy = { a = 3; b = 2; c = 1 }
+  (initial_model, Ui.(Flex { dir = Row; children = [| click_me |] }))
 
 let box_params x y width height (color : Maths.Vec3f.t) : Djinn.params =
   { x; y; width; height; r = color.x; g = color.y; b = color.z }
 
 let rec main_loop n =
-  Printf.printf "Frame %d\n" n;
-  match Djinn.window_should_close ~d with
+  (* Printf.printf "Frame %d\n" n; *)
+  match Djinn.window_should_close () with
   | true -> n
   | false ->
-      Djinn.frame_begin ~d;
-      Djinn.draw_rectangle ~params:(box_params 100 100 220 80 Color.cyan);
-      Djinn.draw_rectangle ~params:(box_params 350 100 220 80 Color.yellow);
-      Djinn.draw_rectangle ~params:(box_params 100 220 220 80 Color.magenta);
-      Djinn.draw_rectangle ~params:(box_params 350 220 220 80 Color.red);
-      Djinn.frame_end ~d;
+      Djinn.frame_begin ();
+      Djinn.draw_rectangle ~params:(box_params 100 100 100 100 Color.cyan);
+      Djinn.draw_rectangle ~params:(box_params 250 100 100 100 Color.yellow);
+      Djinn.draw_rectangle ~params:(box_params 100 250 100 100 Color.magenta);
+      Djinn.draw_rectangle ~params:(box_params 250 250 100 100 Color.red);
+      Djinn.frame_end ();
       main_loop (n + 1)
 
 let () =
   let open Djinn in
   print_endline "I dream of Genie!\n";
-  djinn_try_init ~d;
+  djinn_try_init ();
   print_endline "next";
   let _ = main_loop 0 in
   print_endline "Closed."

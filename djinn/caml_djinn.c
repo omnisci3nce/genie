@@ -6,50 +6,28 @@
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
 #include <caml/unixsupport.h>
-dummy* caml_dummy_of_value(value caml_x) {
-  dummy* x = malloc(sizeof(struct dummy));
-  x->a = Int_val(Field(caml_x, 0));
-  x->b = Int_val(Field(caml_x, 1));
-  x->c = Int_val(Field(caml_x, 2));
-  return x;
-}
-
-value caml_dummy_to_value(struct dummy* x) {
+void caml_djinn_try_init() {
   CAMLparam0();
-  CAMLlocal1(caml_x);
-  caml_x = caml_alloc_tuple(3);
-  Store_field(caml_x, 0, Val_int(x->a));
-  Store_field(caml_x, 1, Val_int(x->b));
-  Store_field(caml_x, 2, Val_int(x->c));
-  CAMLreturn(caml_x);
-}
-
-void caml_djinn_try_init(value caml_d) {
-  CAMLparam1(caml_d);
-  dummy* d = caml_dummy_of_value(caml_d);
-  djinn_try_init(d);
+  djinn_try_init();
   CAMLreturn0;
 }
 
-void caml_frame_begin(value caml_d) {
-  CAMLparam1(caml_d);
-  dummy* d = caml_dummy_of_value(caml_d);
-  frame_begin(d);
+void caml_frame_begin() {
+  CAMLparam0();
+  frame_begin();
   CAMLreturn0;
 }
 
-void caml_frame_end(value caml_d) {
-  CAMLparam1(caml_d);
-  dummy* d = caml_dummy_of_value(caml_d);
-  frame_end(d);
+void caml_frame_end() {
+  CAMLparam0();
+  frame_end();
   CAMLreturn0;
 }
 
-bool caml_window_should_close(value caml_d) {
-  CAMLparam1(caml_d);
+bool caml_window_should_close() {
+  CAMLparam0();
   CAMLlocal1(result);
-  dummy* d = caml_dummy_of_value(caml_d);
-  result = window_should_close(d);
+  result = window_should_close();
   CAMLreturn(result);
 }
 
