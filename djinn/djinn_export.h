@@ -5,18 +5,21 @@
 #pragma once
 #include <stdbool.h>
 
+// --- Lifecycle
 void djinn_try_init(void);
 
+// --- Frame
 void frame_begin();
 void frame_end();
 bool window_should_close();
 
-typedef struct params {
+// --- Drawing
+typedef struct box_params {
     int x, y, width, height;
     float r, g, b;
-} params;
+} box_params;
 
-void draw_rectangle(params* params);
+void draw_rectangle(box_params* params);
 
 // --- Input
 int get_mouse_x();

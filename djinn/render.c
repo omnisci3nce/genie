@@ -65,13 +65,13 @@ bool renderer_init(renderer *ren)
     return true;
 }
 
-typedef struct params
+typedef struct box_params
 {
     int x, y, width, height;
     float r, g, b;
-} params;
+} box_params;
 
-void draw_rectangle(params *params)
+void draw_rectangle(box_params *params)
 {
     draw_rect cmd = {
         .x = params->x,

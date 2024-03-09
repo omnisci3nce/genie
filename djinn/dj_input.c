@@ -9,7 +9,7 @@ void input_update(input_state* input) {
     int left_state = glfwGetMouseButton(input->window, GLFW_MOUSE_BUTTON_LEFT);
 
     new_mouse_state.prev_left_btn_pressed = input->mouse.left_btn_pressed;
-    if (left_state == GLFW_PRESS) {
+    if (left_state == GLFW_PRESS || left_state == GLFW_REPEAT) {
         new_mouse_state.left_btn_pressed = true;
     } else {
         new_mouse_state.left_btn_pressed = false;
