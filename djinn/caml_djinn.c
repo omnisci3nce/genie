@@ -64,4 +64,32 @@ void caml_draw_rectangle(value caml_params) {
   CAMLreturn0;
 }
 
+int caml_get_mouse_x() {
+  CAMLparam0();
+  CAMLlocal1(result);
+  result = get_mouse_x();
+  CAMLreturn(result);
+}
+
+int caml_get_mouse_y() {
+  CAMLparam0();
+  CAMLlocal1(result);
+  result = get_mouse_y();
+  CAMLreturn(result);
+}
+
+bool caml_get_left_btn() {
+  CAMLparam0();
+  CAMLlocal1(result);
+  result = get_left_btn();
+  CAMLreturn(result);
+}
+
+bool caml_get_prev_left_btn() {
+  CAMLparam0();
+  CAMLlocal1(result);
+  result = get_prev_left_btn();
+  CAMLreturn(result);
+}
+
 

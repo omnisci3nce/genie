@@ -23,7 +23,7 @@
 
 #define PREFIX static
 
-#define DECL_TYPED_ARRAY(T)                                                          \
+#define DECL_TYPED_ARRAY(T)                                                               \
   typedef typed_array(T) T##_darray;                                                      \
   typedef typed_array_iterator(T) T##_darray_iter;                                        \
                                                                                           \

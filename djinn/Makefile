@@ -5,14 +5,14 @@ CC := gcc
 INCLUDES := -I vendor/glad/include -I vendor/glfw-3.3.8/include -I ./
 
 # Source files
-SOURCES := vendor/glad/src/glad.c djinn.c render.c bin/djinn_example_app.c
+SOURCES := vendor/glad/src/glad.c djinn.c input.c render.c bin/djinn_example_app.c
 
 # Output directory and binary
 OUTDIR := build
 OUTPUT := $(OUTDIR)/djinn_example_app
 
 # Libraries
-LIBS := -lm -lglfw
+LIBS := -lm -ldl -lglfw
 
 # Compiler flags
 CFLAGS := $(INCLUDES) $(LIBS)

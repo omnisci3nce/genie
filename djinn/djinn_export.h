@@ -19,7 +19,7 @@ typedef struct params {
 void draw_rectangle(params* params);
 
 // --- Input
-// int get_mouse_x(dummy* d);
-// int get_mouse_y(dummy* d);
-// bool get_left_btn(dummy* d);
-// bool get_prev_left_btn(dummy* d);
+int get_mouse_x();
+int get_mouse_y();
+bool get_left_btn();
+bool get_prev_left_btn();

@@ -15,11 +15,10 @@
 (include_subdirs unqualified)
 
 (foreign_library
-
  (archive_name libdjinn)
  (language c)
  (enabled_if true)
- (names djinn render glad)
+ (names djinn dj_input render glad)
  
  (flags
   (:standard -O2 -lglfw))
@@ -28,7 +27,7 @@
 (rule
  (alias all)
  (targets djinn.ml caml_djinn.c)
- (deps djinn_export.h djinn.h render.h std.h)
+ (deps djinn_export.h djinn.h input.h render.h std.h)
  (action
   (run %{bin:ocaml-bindgen} djinn_export.h djinn))
  (mode

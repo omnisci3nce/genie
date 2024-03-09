@@ -79,6 +79,7 @@ void draw_rectangle(params *params)
         .g = params->g,
         .b = params->b,
     };
+    printf("Pushing draw call for rectangle (x: %d) (y: %d) (w: %d) (h: %d)\n", cmd.x, cmd.y, cmd.width, cmd.height);
     draw_rect_darray_push(g_djinn.render.draw_cmd_buf, cmd);
 }
 

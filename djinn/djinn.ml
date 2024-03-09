@@ -13,3 +13,7 @@ type nonrec params =
   g: float ;
   b: float }
 external draw_rectangle : params:params -> unit = "caml_draw_rectangle"
+external get_mouse_x : unit -> int = "caml_get_mouse_x"
+external get_mouse_y : unit -> int = "caml_get_mouse_y"
+external get_left_btn : unit -> bool = "caml_get_left_btn"
+external get_prev_left_btn : unit -> bool = "caml_get_prev_left_btn"
