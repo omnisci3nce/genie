@@ -1,6 +1,6 @@
 open Genie
 open Maths
-open Genie.Styles
+open Styles
 
 [@@@warnerror "-unused-value-declaration"]
 

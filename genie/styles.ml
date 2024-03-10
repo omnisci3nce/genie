@@ -15,6 +15,8 @@ type box_styles = {
   pressed_color : RGB.t;
 }
 
+type text_styles = { color : RGB.t; hovered_color : RGB.t; font_size : float }
+
 let default_box =
   {
     color = RGB.black;
@@ -29,6 +31,6 @@ let default_box =
   }
 
 (* Builder functions *)
-let with_color color box = { box with color }
-let with_hovered_color color box = { box with hovered_color = color }
-let with_pressed_color color box = { box with pressed_color = color }
+let with_color color box : box_styles = { box with color }
+let with_hovered_color color box : box_styles = { box with hovered_color = color }
+let with_pressed_color color box : box_styles = { box with pressed_color = color }

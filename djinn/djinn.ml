@@ -3,15 +3,17 @@ external djinn_try_init : unit -> unit = "caml_djinn_try_init"
 external frame_begin : unit -> unit = "caml_frame_begin"
 external frame_end : unit -> unit = "caml_frame_end"
 external window_should_close : unit -> bool = "caml_window_should_close"
-type nonrec box_params =
-  {
-  x: int ;
-  y: int ;
-  width: int ;
-  height: int ;
-  r: float ;
-  g: float ;
-  b: float }
+
+type nonrec box_params = {
+  x : int;
+  y : int;
+  width : int;
+  height : int;
+  r : float;
+  g : float;
+  b : float;
+}
+
 external draw_rectangle : params:box_params -> unit = "caml_draw_rectangle"
 external get_mouse_x : unit -> int = "caml_get_mouse_x"
 external get_mouse_y : unit -> int = "caml_get_mouse_y"

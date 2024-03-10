@@ -2,7 +2,7 @@ open Ui
 open Styles
 open Color
 
-let draw_button widget_id _text styles box cache =
+let draw_button widget_id _text (styles : box_styles) box cache =
   let open Maths in
   (* Printf.printf "Draw widget %s with pos %d %d (width %d height %d)\n" widget_id box.x box.y box.width box.height; flush stdout; *)
   match Hashtbl.find_opt cache widget_id with
