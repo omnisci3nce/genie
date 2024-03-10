@@ -57,10 +57,39 @@ value caml_box_params_to_value(struct box_params* x) {
   CAMLreturn(caml_x);
 }
 
+text_params* caml_text_params_of_value(value caml_x) {
+  text_params* x = malloc(sizeof(struct text_params));
+  x->x = Int_val(Field(caml_x, 0));
+  x->y = Int_val(Field(caml_x, 1));
+  x->r = Double_val(Field(caml_x, 2));
+  x->g = Double_val(Field(caml_x, 3));
+  x->b = Double_val(Field(caml_x, 4));
+  return x;
+}
+
+value caml_text_params_to_value(struct text_params* x) {
+  CAMLparam0();
+  CAMLlocal1(caml_x);
+  caml_x = caml_alloc_tuple(5);
+  Store_field(caml_x, 0, Val_int(x->x));
+  Store_field(caml_x, 1, Val_int(x->y));
+  Store_field(caml_x, 2, caml_copy_double(x->r));
+  Store_field(caml_x, 3, caml_copy_double(x->g));
+  Store_field(caml_x, 4, caml_copy_double(x->b));
+  CAMLreturn(caml_x);
+}
+
 void caml_draw_rectangle(value caml_params) {
   CAMLparam1(caml_params);
   box_params* params = caml_box_params_of_value(caml_params);
   draw_rectangle(params);
+  CAMLreturn0;
+}
+
+void caml_draw_text_string(value caml_params) {
+  CAMLparam1(caml_params);
+  text_params* params = caml_text_params_of_value(caml_params);
+  draw_text_string(params);
   CAMLreturn0;
 }
 

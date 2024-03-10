@@ -31,16 +31,27 @@ let build_ui_tree model =
         })
   and bottomleft_btn =
     Button.make ~text:"Hello!" ~styles:red_button_style "btn3" (fun model ->
-        {
-          model with
-          bottomleft = not model.bottomleft;
-          right_column_btns = List.tl model.right_column_btns;
-        })
+        if List.length model.right_column_btns = 0 then (
+          print_endline "List is empty.";
+          model)
+        else
+          {
+            model with
+            bottomleft = not model.bottomleft;
+            right_column_btns =
+              CCList.tail_opt model.right_column_btns |> CCOption.get_or ~default:[];
+          })
   in
 
   let right_col_btns =
     List.map
-      (fun i -> Button.make ~styles:my_button_style (string_of_int i) (fun model -> model))
+      (fun i ->
+        Button.make
+          ~text:(" Button " ^ string_of_int i)
+          ~styles:my_button_style (string_of_int i)
+          (fun model ->
+            let filtered = List.filter (fun btn -> btn != i) model.right_column_btns in
+            { model with right_column_btns = filtered }))
       model.right_column_btns
   in
   Ui.(
@@ -78,6 +89,7 @@ let rec main_loop prev_ui ui widget_cache model n =
   | true -> n
   | false ->
       Djinn.frame_begin ();
+      (* Djinn.draw_text_string ~params:(Djinn_wrapper.text_params 400 400 "Hello!" Color.bright_blue); *)
       let mouse_input = Input.get_mouse_input () in
       (* Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout; *)
       let new_model =

@@ -6,3 +6,6 @@ let get_mouse_pos () =
 
 let box_params x y width height (color : Maths.Vec3f.t) : Djinn.box_params =
   { x; y; width; height; r = color.x; g = color.y; b = color.z }
+
+let text_params x y (_contents : string) (color : Maths.Vec3f.t) : Djinn.text_params =
+  { x; y; r = color.x; g = color.y; b = color.z }

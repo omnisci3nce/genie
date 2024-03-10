@@ -86,6 +86,27 @@ void draw_rectangle(box_params *params)
     draw_rect_darray_push(g_djinn.render.draw_cmd_buf, cmd);
 }
 
+typedef struct text_params {
+    int x, y;
+    // char *contents;
+    float r, g, b;
+} text_params;
+
+void draw_text_string(text_params *params)
+{
+    draw_text cmd = {
+        .x = params->x,
+        .y = params->y,
+        // .contents = params->contents,
+        .contents = "Hello",
+        .r = params->r,
+        .g = params->g,
+        .b = params->b,
+    };
+    // printf("Pushing draw call for rectangle (x: %d) (y: %d) (w: %d) (h: %d)\n", cmd.x, cmd.y, cmd.width, cmd.height);
+    draw_text_darray_push(g_djinn.text.draw_cmd_buf, cmd);
+}
+
 DECL_TYPED_ARRAY(f32)
 
 void ui_draw() {
@@ -157,6 +178,7 @@ void frame_begin()
 void frame_end()
 {
     ui_draw();
+    text_system_render(&g_djinn.text);
     glfwSwapBuffers(g_djinn.render.window);
     glfwPollEvents();
     usleep(16 * 1000);
