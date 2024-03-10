@@ -19,7 +19,6 @@
  (language c)
  (enabled_if true)
  (names djinn dj_input render glad)
- 
  (flags
   (:standard -O2 -lglfw))
  (include_dirs vendor/glad/include))

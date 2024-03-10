@@ -2,4 +2,5 @@
  (public_name basic)
  (name main)
  (libraries genie djinn)
- (preprocess (pps ppx_deriving.show ppx_deriving.ord)))
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord)))

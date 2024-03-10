@@ -9,11 +9,12 @@ void input_update(input_state* input) {
     int left_state = glfwGetMouseButton(input->window, GLFW_MOUSE_BUTTON_LEFT);
 
     new_mouse_state.prev_left_btn_pressed = input->mouse.left_btn_pressed;
-    if (left_state == GLFW_PRESS || left_state == GLFW_REPEAT) {
+    if (left_state == GLFW_PRESS) {
         new_mouse_state.left_btn_pressed = true;
     } else {
         new_mouse_state.left_btn_pressed = false;
     }
+    // printf("Prev Left: %d   Left: %d\n", new_mouse_state.prev_left_btn_pressed, new_mouse_state.left_btn_pressed);
 
     input->mouse = new_mouse_state;
 }
@@ -32,9 +33,9 @@ int get_mouse_y() {
 }
 bool get_left_btn() {
     Djinn dj = g_djinn;
-    return dj.input.mouse.left_btn_pressed;
+    return !dj.input.mouse.left_btn_pressed;
 }
 bool get_prev_left_btn() {
     Djinn dj = g_djinn;
-    return dj.input.mouse.prev_left_btn_pressed;
+    return !dj.input.mouse.prev_left_btn_pressed;
 }

@@ -31,7 +31,7 @@ module Vec2Float = struct
 end
 
 module Vec3Float = struct
-  type t = { x : float; y : float; z : float }[@@deriving show]
+  type t = { x : float; y : float; z : float } [@@deriving show]
 
   let add u v = { x = u.x +. v.x; y = u.y +. v.y; z = u.z +. v.z }
   let sub u v = { x = u.x -. v.x; y = u.y -. v.y; z = u.z -. v.z }
@@ -39,9 +39,9 @@ module Vec3Float = struct
   let dot u v = (u.x *. v.x) +. (u.y *. v.y) +. (u.z *. v.z)
 end
 
-
 module VectorOps (V : Vector) = struct
   type t = V.t [@@deriving show]
+
   let add = V.add
   let sub = V.sub
   let scalar_mul = V.scalar_mul
@@ -65,39 +65,47 @@ module Vec3f_ = VectorOps (Vec3Float)
 
 module Vec2i = struct
   include Vec2i_
-  let make x y : t = { x; y}
-  let min (u: t) (v: t) : t = { x = Int.min u.x v.x; y = Int.min u.y v.y } 
-  let max (u: t) (v: t) : t = { x = Int.max u.x v.x; y = Int.max u.y v.y } 
-end
-module Vec2f = struct
-  include Vec2f_
-  let make x y : t = { x; y}
-end
-module Vec3f = struct
-  include Vec3f_
-  
-  let make x y z : t = { x; y; z }
-  let to_tuple (v: t) = (v.x, v.y, v.z)
+
+  let make x y : t = { x; y }
+  let min (u : t) (v : t) : t = { x = Int.min u.x v.x; y = Int.min u.y v.y }
+  let max (u : t) (v : t) : t = { x = Int.max u.x v.x; y = Int.max u.y v.y }
 end
 
-type simple_rect = { mutable x: int; mutable y: int; mutable width: int; mutable height: int }
-let zero_simple_rect = { x = 0; y = 0; width = 0; height = 0 }
+module Vec2f = struct
+  include Vec2f_
+
+  let make x y : t = { x; y }
+end
+
+module Vec3f = struct
+  include Vec3f_
+
+  let make x y z : t = { x; y; z }
+  let to_tuple (v : t) = (v.x, v.y, v.z)
+end
+
+type simple_rect = { mutable x : int; mutable y : int; mutable width : int; mutable height : int }
+
+let zero_simple_rect () = { x = 0; y = 0; width = 0; height = 0 }
+
 type rect = { pos : Vec2i.t; extents : Vec2i.t } [@@deriving show]
-let rect_of_simple_rect rect = { pos = Vec2i.make rect.x rect.y; extents = Vec2i.make rect.width rect.height; } 
+
+let rect_of_simple_rect rect =
+  { pos = Vec2i.make rect.x rect.y; extents = Vec2i.make rect.width rect.height }
 
 let zero_rect = { pos = Vec2i.make 0 0; extents = Vec2i.make 0 0 }
 
-let intersects (a: rect) (b: rect) =
-  a.pos.x >= b.pos.x && (a.pos.x + a.extents.x) <= (b.pos.x + b.extents.x)
-  && a.pos.y >= b.pos.y && (a.pos.y + a.extents.y) <= (b.pos.y + b.extents.y)
+let intersects (a : rect) (b : rect) =
+  a.pos.x >= b.pos.x
+  && a.pos.x + a.extents.x <= b.pos.x + b.extents.x
+  && a.pos.y >= b.pos.y
+  && a.pos.y + a.extents.y <= b.pos.y + b.extents.y
 
-let grow_rect (a: rect) (b: rect) = let open Vec2i in
-  let pos = min a.pos b.pos
-  and max_pt = max (add a.pos a.extents) (add b.pos b.extents) in
+let grow_rect (a : rect) (b : rect) =
+  let open Vec2i in
+  let pos = min a.pos b.pos and max_pt = max (add a.pos a.extents) (add b.pos b.extents) in
   let extents = sub max_pt pos in
-  {
-    pos; extents
-  }
+  { pos; extents }
 
 (* TODO: These are not necessary yet *)
 type mat3x3 = { x_axis : Vec3f.t; y_axis : Vec3f.t; z_axis : Vec3f.t }
