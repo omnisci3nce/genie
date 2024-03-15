@@ -76,7 +76,7 @@ let rec update_ui mouse keyboard widget_cache model tree =
   | Flex { children; _ } ->
       List.fold_left (fun acc t -> update_ui mouse keyboard widget_cache acc t) model children
 
-let layout_ui scr_width scr_height tree =
+let layout_ui ?(print_ui_tree = false) scr_width scr_height tree =
   (* Step 1: Propagate fixed sizes *)
   let apply_fixed node =
     match node with
@@ -112,7 +112,6 @@ let layout_ui scr_width scr_height tree =
         f
     | Widget _ as n -> n
   in
-  (* let rec compute_positions (root_width: interval) (root_height:interval) node = match node with *)
   let rec compute_positions offset_x offset_y node =
     match node with
     | Flex { dir; children; computed_size; spacing } as flex ->
@@ -143,11 +142,13 @@ let layout_ui scr_width scr_height tree =
         node
   in
 
+  (* These mutate the tree directly for performance reasons and so the output is not used. *)
   let _ = pre_order_traversal apply_fixed tree in
-  (* This mutates directly *)
   let _ = post_order_traversal apply_flex_sizes tree in
-  (* let _ = pre_order_traversal print_ui_node tree in
-     flush stdout; *)
+  if print_ui_tree then
+    let _ = pre_order_traversal print_ui_node tree in
+    flush stdout
+  else ();
   let _ = compute_positions scr_height scr_width tree in
   (* let _ = post_order_traversal (apply_flex_col scr_width scr_height) tree in *)
   ()

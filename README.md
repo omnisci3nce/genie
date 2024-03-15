@@ -6,6 +6,10 @@ A simple, functional style GUI framework.
 
 All third-party dependencies are licensed under their own license.
 
+## Platform Support
+
+**Currently Linux is the only supported target! This is a _highly_ WIP library and so cross-platform support while absolutely planned will not be here for a while.**
+
 ## Contributing
 
 Right now you need to pin my fork of ocaml-bindgen manually with

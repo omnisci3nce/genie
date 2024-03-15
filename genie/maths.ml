@@ -40,12 +40,8 @@ module Vec3Float = struct
 end
 
 module VectorOps (V : Vector) = struct
-  type t = V.t [@@deriving show]
+  include V
 
-  let add = V.add
-  let sub = V.sub
-  let scalar_mul = V.scalar_mul
-  let dot = V.dot
   let scalar_div s v = scalar_mul (1. /. s) v
   let neg v = scalar_mul (-1.0) v
   let length_squared v = dot v v
