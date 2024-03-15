@@ -1,21 +1,33 @@
 (library
-  (name djinn)
+ (name djinn)
+ (c_library_flags (-lglfw))
  (foreign_stubs
   (language c)
-  (names djinn caml_djinn)
-  (include_dirs vendor/glad/include vendor/glad/include/glad/ vendor/glfw-3.3.8/include)
+  (names caml_djinn)
+  (include_dirs
+   vendor/glad/include
+   vendor/glad/include/glad/
+   vendor/glfw-3.3.8/include)
   (flags
-   (:standard -O2 -lglfw))))
+   (:standard -O2)))
+ (foreign_archives libdjinn))
+
+(include_subdirs unqualified)
+
+(foreign_library
+ (archive_name libdjinn)
+ (language c)
+ (enabled_if true)
+ (names djinn dj_input render glad)
+ (flags
+  (:standard -O2 -lglfw))
+ (include_dirs vendor/glad/include))
 
 (rule
  (alias all)
- (targets
-   djinn.ml
-   caml_djinn.c
-  )
- (deps djinn.h std.h)
+ (targets djinn.ml caml_djinn.c)
+ (deps djinn_export.h djinn.h input.h render.h std.h)
  (action
-  (run
-   %{bin:ocaml-bindgen} djinn.h djinn))
+  (run %{bin:ocaml-bindgen} djinn_export.h djinn))
  (mode
   (promote (until-clean))))

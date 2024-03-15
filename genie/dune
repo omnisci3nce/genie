@@ -1,3 +1,5 @@
 (library
  (name genie)
- (libraries bindgen djinn))
+ (libraries bindgen containers djinn)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord)))

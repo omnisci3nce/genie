@@ -1,4 +1,6 @@
 (executable
  (public_name basic)
  (name main)
- (libraries genie))
+ (libraries genie djinn)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord)))

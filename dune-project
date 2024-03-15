@@ -1,4 +1,4 @@
-(lang dune 3.13)
+(lang dune 3.14)
 
 (name genie)
 
@@ -19,7 +19,7 @@
  (name genie)
  (synopsis "Simple GUI framwork in OCaml")
  (description "A longer description")
- (depends ocaml dune bindgen)
+ (depends ocaml dune bindgen containers ppx_deriving)
  (tags
   (topics "to describe" your project)))
 
