@@ -43,7 +43,7 @@ bool renderer_init(renderer *ren)
 
     printf("Compiling shaders\n");
     u32 shader = shader_create_separate("djinn/shaders/rectangle.vert", "djinn/shaders/rectangle.frag");
-    printf("finished\n");
+    printf("Finished compiling shaders\n");
     ren->rect_shader = shader;
 
     // set up VBO

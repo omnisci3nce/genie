@@ -45,7 +45,6 @@ let make ?(text = "") ?(styles = default_box) id onclick : 'model ui_node =
       id;
       size = default_btn_size;
       computed_size;
-      (* calc_assign_size = (fun _ _ -> ()); *)
       draw = draw_button id text styles;
       handle_interaction = handle_button id onclick;
     }

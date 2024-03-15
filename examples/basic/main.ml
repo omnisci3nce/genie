@@ -88,7 +88,6 @@ let rec main_loop prev_ui ui widget_cache model n =
         flush stdout)
       else ();
       let new_ui = build_ui_tree new_model in
-      (* Ui.layout_ui { min = 0; max = screen_width } { min = 0; max = screen_height } ui; *)
       Ui.layout_ui 0 0 ui;
       Ui.draw_ui ui widget_cache;
 
@@ -103,8 +102,3 @@ let () =
   let initial_widget_cache = Hashtbl.create 10 in
   let _ = main_loop initial_ui initial_ui initial_widget_cache initial_model 0 in
   print_endline "Closed."
-
-(* Djinn.draw_rectangle ~params:(box_params 100 100 100 100 Color.cyan);
-   Djinn.draw_rectangle ~params:(box_params 250 100 100 100 Color.yellow);
-   Djinn.draw_rectangle ~params:(box_params 100 250 100 100 Color.magenta);
-   Djinn.draw_rectangle ~params:(box_params 250 250 100 100 Color.red); *)
