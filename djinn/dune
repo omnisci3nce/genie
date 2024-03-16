@@ -1,5 +1,5 @@
 (library
- (name djinn)
+ (name djinn_sys)
  (c_library_flags (-lglfw))
  (foreign_stubs
   (language c)
@@ -24,11 +24,11 @@
   (:standard -O2 -lglfw))
  (include_dirs vendor/glad/include vendor/stb_truetype))
 
-(rule
- (alias all)
- (targets djinn.ml caml_djinn.c)
- (deps djinn_export.h djinn.h input.h render.h std.h text.h)
- (action
-  (run %{bin:ocaml-bindgen} djinn_export.h djinn))
- (mode
-  (promote (until-clean))))
+; (rule
+;  (alias all)
+;  (targets djinn_sys.ml caml_djinn.c)
+;  (deps djinn_export.h djinn.h input.h render.h std.h text.h)
+;  (action
+;   (run %{bin:ocaml-bindgen} djinn_export.h djinn))
+;  (mode
+;   (promote (until-clean))))

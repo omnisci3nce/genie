@@ -107,6 +107,18 @@ void draw_text_string(text_params *params)
     draw_text_darray_push(g_djinn.text.draw_cmd_buf, cmd);
 }
 
+void draw_text_str(int x, int y, char* contents) {
+    draw_text cmd = {
+        .x = x,
+        .y = y,
+        .contents = contents,
+        .r = 0.9,
+        .g = 0.9,
+        .b = 0.95,
+    };
+    draw_text_darray_push(g_djinn.text.draw_cmd_buf, cmd);
+}
+
 DECL_TYPED_ARRAY(f32)
 
 void ui_draw() {

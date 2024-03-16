@@ -27,6 +27,7 @@ typedef struct text_params {
 
 void draw_rectangle(box_params* params);
 void draw_text_string(text_params* params);
+void draw_text_str(int x, int y, char* contents);
 
 // --- Input
 int get_mouse_x();
