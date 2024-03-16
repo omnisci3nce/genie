@@ -1,10 +1,14 @@
 (** Defines a Text component *)
 
 open Ui
+open Color
 open Styles
-open Maths
 
-let draw_text text styles box _cache = Draw.draw_text box.x box.y text styles.color
+let draw_text text styles box _cache =
+  let open Maths in
+  (* print_endline "Drawing text"; *)
+  Draw.draw_text box.x box.y text (styles.color |> RGB.to_vec3)
+
 let handle_text _mouse _key _rect _cache model = model
 
 let make (text : string) (styles : text_styles) id =
@@ -16,4 +20,5 @@ let make (text : string) (styles : text_styles) id =
       computed_size;
       draw = draw_text text styles;
       handle_interaction = handle_text;
+      children = [];
     }

@@ -38,6 +38,49 @@ typedef struct vec3 {
     float x, y, z;
 } vec3;
 
+typedef struct mat4 {
+  f32 data[16];
+} mat4;
+
+typedef struct mat2x2 {
+  f32 data[4];
+} mat2x2;
+
+/** @brief 2D affome transformation */
+typedef struct transform2d {
+  vec2f position;
+  f32 rotation;
+  vec2f scale;
+  bool is_dirty;
+} transform2d;
+
+// TODO: transform2d -> mat2x2
+
+static inline mat4 mat4_ident() {
+  return (mat4){ .data = { 1.0, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.0 } };
+}
+
+/** @brief Creates an orthographic projection matrix */
+static inline mat4 mat4_orthographic(f32 left, f32 right, f32 bottom, f32 top, f32 near_clip,
+                                     f32 far_clip) {
+  // source: kohi game engine.
+  mat4 out_matrix = mat4_ident();
+
+  f32 lr = 1.0f / (left - right);
+  f32 bt = 1.0f / (bottom - top);
+  f32 nf = 1.0f / (near_clip - far_clip);
+
+  out_matrix.data[0] = -2.0f * lr;
+  out_matrix.data[5] = -2.0f * bt;
+  out_matrix.data[10] = 2.0f * nf;
+
+  out_matrix.data[12] = (left + right) * lr;
+  out_matrix.data[13] = (top + bottom) * bt;
+  out_matrix.data[14] = (far_clip + near_clip) * nf;
+
+  return out_matrix;
+}
+
 /// --- Colors
 
 #define FOREGROUND ((vec3){ 0.95, 0.95, 0.95 })

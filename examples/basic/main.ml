@@ -21,7 +21,7 @@ let counter = ref 4
 
 let build_ui_tree model =
   let topleft_btn =
-    Button.make ~text:"Hello!" ~styles:red_button_style "btn1" (fun model ->
+    Button.make ~text:"Add Row" ~styles:red_button_style "btn1" (fun model ->
         print_endline "You did it! You clicked me!";
         counter := !counter + 1;
         {
@@ -30,17 +30,28 @@ let build_ui_tree model =
           right_column_btns = model.right_column_btns @ [ !counter ];
         })
   and bottomleft_btn =
-    Button.make ~text:"Hello!" ~styles:red_button_style "btn3" (fun model ->
-        {
-          model with
-          bottomleft = not model.bottomleft;
-          right_column_btns = List.tl model.right_column_btns;
-        })
+    Button.make ~text:"Remove Row" ~styles:red_button_style "btn3" (fun model ->
+        if List.length model.right_column_btns = 0 then (
+          print_endline "List is empty.";
+          model)
+        else
+          {
+            model with
+            bottomleft = not model.bottomleft;
+            right_column_btns =
+              CCList.tail_opt model.right_column_btns |> CCOption.get_or ~default:[];
+          })
   in
 
   let right_col_btns =
     List.map
-      (fun i -> Button.make ~styles:my_button_style (string_of_int i) (fun model -> model))
+      (fun i ->
+        Button.make
+          ~text:(" Button " ^ string_of_int i)
+          ~styles:my_button_style (string_of_int i)
+          (fun model ->
+            let filtered = List.filter (fun btn -> btn != i) model.right_column_btns in
+            { model with right_column_btns = filtered }))
       model.right_column_btns
   in
   Ui.(
@@ -74,10 +85,11 @@ let _screen_height = 800
 let rec main_loop prev_ui ui widget_cache model n =
   let open Input in
   (* Printf.printf "Frame %d\n" n; *)
-  match Djinn.window_should_close () with
+  match Djinn_sys.window_should_close () with
   | true -> n
   | false ->
-      Djinn.frame_begin ();
+      Djinn_sys.frame_begin ();
+      (* Djinn.draw_text_string ~params:(Djinn_wrapper.text_params 400 400 "Hello!" Color.bright_blue); *)
       let mouse_input = Input.get_mouse_input () in
       (* Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout; *)
       let new_model =
@@ -91,11 +103,11 @@ let rec main_loop prev_ui ui widget_cache model n =
       Ui.layout_ui 0 0 ui;
       Ui.draw_ui ui widget_cache;
 
-      Djinn.frame_end ();
+      Djinn_sys.frame_end ();
       main_loop ui new_ui widget_cache new_model (n + 1)
 
 let () =
-  let open Djinn in
+  let open Djinn_sys in
   print_endline "I dream of Genie!\n";
   djinn_try_init ();
   let initial_ui = build_ui_tree initial_model in

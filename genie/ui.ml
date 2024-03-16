@@ -8,6 +8,9 @@ type widget_state = Button of basic_interactable
 type widget_id = string
 type widget_cache = (widget_id, widget_state) Hashtbl.t
 type interval = { min : int; max : int }
+type 'a tree = Leaf of 'a | Node of 'a tree list
+
+(* Leafs in our model are things like Text *)
 
 (** A "thing" that can be drawn, or affects the layout of,
     the drawing parameterised over the user's data model *)
@@ -19,6 +22,7 @@ type 'model ui_node =
       draw : simple_rect -> widget_cache -> unit;
       handle_interaction :
         Input.mouse_input -> Input.key_input -> rect -> widget_cache -> 'model -> 'model;
+      children : 'model ui_node list;
     }
   | Flex of {
       dir : flex_direction;
@@ -125,9 +129,16 @@ let layout_ui ?(print_ui_tree = false) scr_width scr_height tree =
         (* Iterate over children, allocating space and setting positions. *)
         let _ = List.fold_left space_allocator (offset_x, offset_y) children in
         flex
-    | Widget _ as w ->
+    | Widget { children; _ } as w ->
         set_x offset_x w;
         set_y offset_y w;
+        let space_allocator ((x, y) : int * int) child =
+          let _ = compute_positions (x + 20) (y + 50) child in
+          let new_x = x + get_width child in
+          (* We only arrange on a row for now inside box/divs *)
+          (new_x, y)
+        in
+        let _ = List.fold_left space_allocator (offset_x, offset_y) children in
         node
   in
 
@@ -144,5 +155,7 @@ let layout_ui ?(print_ui_tree = false) scr_width scr_height tree =
 
 let rec draw_ui tree widget_cache =
   match tree with
-  | Widget { draw; computed_size; _ } -> draw computed_size widget_cache
+  | Widget { draw; computed_size; children; _ } ->
+      draw computed_size widget_cache;
+      List.iter (fun child -> draw_ui child widget_cache) children
   | Flex { children; _ } -> List.iter (fun child -> draw_ui child widget_cache) children
