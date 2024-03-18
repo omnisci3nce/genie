@@ -4,10 +4,16 @@ open Styles
 
 [@@@warnerror "-unused-value-declaration"]
 
-type example_model = { topleft : bool; bottomleft : bool; right_column_btns : int list }
+type example_model = {
+  show : bool;
+  topleft : bool;
+  bottomleft : bool;
+  right_column_btns : int list;
+}
 [@@deriving show]
 
-let initial_model = { topleft = false; bottomleft = false; right_column_btns = [ 1; 2; 3; 4 ] }
+let initial_model =
+  { show = true; topleft = false; bottomleft = false; right_column_btns = [ 1; 2; 3; 4 ] }
 
 let my_button_style =
   default_box |> with_color Color.stone800 |> with_hovered_color Color.stone700
@@ -42,7 +48,6 @@ let build_ui_tree model =
               CCList.tail_opt model.right_column_btns |> CCOption.get_or ~default:[];
           })
   in
-
   let right_col_btns =
     List.map
       (fun i ->
@@ -54,6 +59,9 @@ let build_ui_tree model =
             { model with right_column_btns = filtered }))
       model.right_column_btns
   in
+
+  let test_checkbox = Checkbox.make "chkbox1" (fun m -> { m with show = not m.show }) in
+  let test_text = Text.make "Show/Hide List"  default_text  "textid" in
   Ui.(
     Flex
       {
@@ -67,15 +75,17 @@ let build_ui_tree model =
                 dir = Column;
                 spacing = { x_axis = 0; y_axis = 60 };
                 computed_size = zero_simple_rect ();
-                children = [ topleft_btn; bottomleft_btn ];
+                children = [ topleft_btn; bottomleft_btn; test_checkbox;  test_text];
               };
-            Flex
-              {
-                dir = Column;
-                spacing = { x_axis = 0; y_axis = 30 };
-                computed_size = zero_simple_rect ();
-                children = right_col_btns;
-              };
+            Ui.make_visibility "list_visibility"
+              (fun m -> m.show)
+              (Flex
+                 {
+                   dir = Column;
+                   spacing = { x_axis = 0; y_axis = 30 };
+                   computed_size = zero_simple_rect ();
+                   children = right_col_btns;
+                 });
           ];
       })
 

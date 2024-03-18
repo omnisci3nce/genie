@@ -13,6 +13,7 @@ let draw_button widget_id _text (styles : box_styles) box cache =
   | Some (Button Inactive) ->
       Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
   | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
+  | _ -> ()
 
 let str_of_interact = function
   | Inactive -> "Inactive"
