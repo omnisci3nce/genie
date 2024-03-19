@@ -30,6 +30,8 @@ let default_box =
     pressed_color = RGB.black;
   }
 
+let default_text = { color = RGB.white; hovered_color = RGB.white; font_size = 16.0 }
+
 (* Builder functions *)
 let with_color color box : box_styles = { box with color }
 let with_hovered_color color box : box_styles = { box with hovered_color = color }

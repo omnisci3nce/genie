@@ -2,10 +2,10 @@
 CC := gcc
 
 # Include directories
-INCLUDES := -I vendor/glad/include -I vendor/glfw-3.3.8/include -I ./
+INCLUDES := -I vendor/glad/include -I vendor/glfw-3.3.8/include -I vendor/stb_truetype -I ./
 
 # Source files
-SOURCES := vendor/glad/src/glad.c djinn.c dj_input.c render.c bin/djinn_example_app.c
+SOURCES := vendor/glad/src/glad.c djinn.c dj_input.c render.c text.c bin/djinn_example_app.c
 
 # Output directory and binary
 OUTDIR := build

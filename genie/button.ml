@@ -13,6 +13,7 @@ let draw_button widget_id _text (styles : box_styles) box cache =
   | Some (Button Inactive) ->
       Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
   | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
+  | _ -> ()
 
 let str_of_interact = function
   | Inactive -> "Inactive"
@@ -38,13 +39,19 @@ let handle_button widget_id apply_onclick (mouse_input : Input.mouse_input) _key
 
 let default_btn_size = Constraints.{ x_axis = Fixed 200; y_axis = Fixed 80 }
 
-let make ?(text = "") ?(styles = default_box) id onclick : 'model ui_node =
+let make ?text ?(styles = default_box) id onclick : 'model ui_node =
   let computed_size = Maths.{ x = 0; y = 0; width = 0; height = 0 } in
-  Widget
+  let children =
+    match text with
+    | Some contents -> [ Text.make contents Styles.default_text contents ]
+    | None -> []
+  in
+  Box
     {
       id;
       size = default_btn_size;
       computed_size;
       draw = draw_button id text styles;
       handle_interaction = handle_button id onclick;
+      children;
     }

@@ -15,7 +15,7 @@ module RGB = struct
     { r; g; b }
 
   let black = { r = 0; g = 0; b = 0 }
-  let black = { r = 0; g = 0; b = 0 }
+  let white = { r = 255; g = 255; b = 255 }
 
   let to_vec3 c =
     Vec3f.make (float_of_int c.r /. 255.0) (float_of_int c.g /. 255.0) (float_of_int c.b /. 255.0)
