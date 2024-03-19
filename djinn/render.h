@@ -11,7 +11,14 @@ typedef struct draw_rect {
     float r, g, b; // TODO: use a vec3
 } draw_rect;
 
+typedef struct draw_text {
+    int x, y;
+    char* contents;
+    float r, g, b;
+} draw_text;
+
 DECL_TYPED_ARRAY(draw_rect)
+DECL_TYPED_ARRAY(draw_text)
 
 typedef struct renderer {
     struct GLFWwindow* window;
@@ -23,5 +30,6 @@ typedef struct renderer {
 } renderer;
 
 bool renderer_init(renderer* ren);
+// TODO: renderer_shutdown
 
 u32 shader_create_separate(const char* vert_shader, const char* frag_shader);

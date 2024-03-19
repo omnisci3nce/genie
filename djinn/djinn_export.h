@@ -19,7 +19,15 @@ typedef struct box_params {
     float r, g, b;
 } box_params;
 
+typedef struct text_params {
+    int x, y;
+    // char* contents;
+    float r, g, b;
+} text_params;
+
 void draw_rectangle(box_params* params);
+void draw_text_string(text_params* params);
+void draw_text_str(int x, int y, char* contents);
 
 // --- Input
 int get_mouse_x();
