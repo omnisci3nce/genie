@@ -51,7 +51,7 @@ let default_checkbox_size = Constraints.{ x_axis = Fixed 50; y_axis = Fixed 50 }
 
 let make ?(styles = default_checkbox) id (lens : ('model, bool) Lens.t) : 'model ui_node =
   let computed_size = Maths.{ x = 0; y = 0; width = 0; height = 0 } in
-  Widget
+  Box
     {
       id;
       size = default_checkbox_size;

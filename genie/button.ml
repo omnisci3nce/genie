@@ -46,7 +46,7 @@ let make ?text ?(styles = default_box) id onclick : 'model ui_node =
     | Some contents -> [ Text.make contents Styles.default_text contents ]
     | None -> []
   in
-  Widget
+  Box
     {
       id;
       size = default_btn_size;

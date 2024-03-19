@@ -86,7 +86,7 @@ let build_ui_tree model =
 let _screen_width = 1000
 let _screen_height = 800
 
-let rec main_loop prev_ui ui widget_cache model n =
+let rec main_loop prev_ui ui state_cache model n =
   let open Input in
   (* Printf.printf "Frame %d\n" n; *)
   match Djinn_sys.window_should_close () with
@@ -96,19 +96,17 @@ let rec main_loop prev_ui ui widget_cache model n =
       (* Djinn.draw_text_string ~params:(Djinn_wrapper.text_params 400 400 "Hello!" Color.bright_blue); *)
       let mouse_input = Input.get_mouse_input () in
       (* Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout; *)
-      let new_model =
-        Ui.update_ui mouse_input { keys = [] (* TODO *) } widget_cache model prev_ui
-      in
+      let new_model = Ui.update_ui mouse_input { keys = [] (* TODO *) } state_cache model prev_ui in
       if new_model != model then (
         Printf.printf "Updated Model: %s\n" (show_model new_model);
         flush stdout)
       else ();
       let new_ui = build_ui_tree new_model in
       Ui.layout_ui 0 0 ui;
-      Ui.draw_ui ui widget_cache;
+      Ui.draw_ui ui state_cache;
 
       Djinn_sys.frame_end ();
-      main_loop ui new_ui widget_cache new_model (n + 1)
+      main_loop ui new_ui state_cache new_model (n + 1)
 
 let () =
   let open Djinn_sys in
