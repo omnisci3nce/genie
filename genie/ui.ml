@@ -13,9 +13,6 @@ type widget_state =
 type widget_id = string
 type widget_cache = (widget_id, widget_state) Hashtbl.t
 type interval = { min : int; max : int }
-type 'a tree = Leaf of 'a | Node of 'a tree list
-
-(* Leafs in our model are things like Text *)
 
 (** A "thing" that can be drawn, or affects the layout of,
     the drawing parameterised over the user's data model *)
