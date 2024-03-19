@@ -20,6 +20,27 @@ let red_button_style =
 
 let counter = ref 4
 
+type item = { colour: string }
+
+let fake_network_request _ : item list = [{ colour = "#543443"}]
+
+(* I want to get state from a network request *)
+
+(*
+I need a component that returns a Button, that when clicked dispatches a network request
+
+onclick are expected to be model -> model
+
+Im guessing the "Task" will return some data, the closure then needs to be able to set data on the model
+we cant really give it mutable access as the whole thing is immutable, so lets say that it returns a function
+that "sets" data
+
+*)
+
+let example_task () =
+  let xyz = fake_network_request () in
+  (fun model -> { model with model.items = xyz })
+
 let build_ui_tree model =
   let topleft_btn =
     Button.make ~text:"Add Row" ~styles:red_button_style "btn1" (fun model ->
