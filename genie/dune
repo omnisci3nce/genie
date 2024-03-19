@@ -1,5 +1,5 @@
 (library
  (name genie)
- (libraries bindgen containers djinn_sys)
+ (libraries bindgen containers lens djinn_sys)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord)))

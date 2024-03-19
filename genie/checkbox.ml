@@ -16,7 +16,8 @@ let draw_checkbox widget_id (styles : box_styles) box cache =
   | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
   | _ -> ()
 
-let handle_checkbox widget_id setter (mouse_input : Input.mouse_input) _key_input rect cache model =
+let handle_checkbox widget_id (lens : ('model, bool) Lens.t) (mouse_input : Input.mouse_input)
+    _key_input rect cache model =
   let open Maths in
   let mouse_xy = { pos = Vec2i.make mouse_input.x mouse_input.y; extents = Vec2i.make 1 1 } in
   (* print_endline (show_rect rect); *)
@@ -28,7 +29,8 @@ let handle_checkbox widget_id setter (mouse_input : Input.mouse_input) _key_inpu
   in
   let old_state, old_checked =
     match
-      Hashtbl.find_opt cache widget_id |> Option.value ~default:(Checkbox (Inactive, false))
+      Hashtbl.find_opt cache widget_id
+      |> Option.value ~default:(Checkbox (Inactive, lens.get model))
     with
     | Checkbox (prev, true) -> (prev, true)
     | Checkbox (prev, false) -> (prev, false)
@@ -40,14 +42,14 @@ let handle_checkbox widget_id setter (mouse_input : Input.mouse_input) _key_inpu
     else old_checked
   in
   Hashtbl.replace cache widget_id (Checkbox (new_state, new_checked));
-  if new_checked != old_checked then setter model else model
+  if new_checked != old_checked then lens.set new_checked model else model
 
 let default_checkbox =
   default_box |> with_color stone200 |> with_hovered_color stone300 |> with_pressed_color stone500
 
 let default_checkbox_size = Constraints.{ x_axis = Fixed 50; y_axis = Fixed 50 }
 
-let make ?(styles = default_checkbox) id (setter : 'model -> 'model) : 'model ui_node =
+let make ?(styles = default_checkbox) id (lens : ('model, bool) Lens.t) : 'model ui_node =
   let computed_size = Maths.{ x = 0; y = 0; width = 0; height = 0 } in
   Widget
     {
@@ -55,6 +57,6 @@ let make ?(styles = default_checkbox) id (setter : 'model -> 'model) : 'model ui
       size = default_checkbox_size;
       computed_size;
       draw = draw_checkbox id styles;
-      handle_interaction = handle_checkbox id setter;
+      handle_interaction = handle_checkbox id lens;
       children = [];
     }

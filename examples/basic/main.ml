@@ -4,16 +4,11 @@ open Styles
 
 [@@@warnerror "-unused-value-declaration"]
 
-type example_model = {
-  show : bool;
-  topleft : bool;
-  bottomleft : bool;
-  right_column_btns : int list;
-}
-[@@deriving show]
+type model = { show_list : bool; topleft : bool; bottomleft : bool; right_column_btns : int list }
+[@@deriving show, lens]
 
 let initial_model =
-  { show = true; topleft = false; bottomleft = false; right_column_btns = [ 1; 2; 3; 4 ] }
+  { show_list = true; topleft = false; bottomleft = false; right_column_btns = [ 1; 2; 3; 4 ] }
 
 let my_button_style =
   default_box |> with_color Color.stone800 |> with_hovered_color Color.stone700
@@ -60,8 +55,8 @@ let build_ui_tree model =
       model.right_column_btns
   in
 
-  let test_checkbox = Checkbox.make "chkbox1" (fun m -> { m with show = not m.show }) in
-  let test_text = Text.make "Show/Hide List"  default_text  "textid" in
+  let test_checkbox = Checkbox.make "chkbox1" model_show_list in
+  let test_text = Text.make "Show/Hide List" default_text "textid" in
   Ui.(
     Flex
       {
@@ -75,10 +70,9 @@ let build_ui_tree model =
                 dir = Column;
                 spacing = { x_axis = 0; y_axis = 60 };
                 computed_size = zero_simple_rect ();
-                children = [ topleft_btn; bottomleft_btn; test_checkbox;  test_text];
+                children = [ topleft_btn; bottomleft_btn; test_checkbox; test_text ];
               };
-            Ui.make_visibility "list_visibility"
-              (fun m -> m.show)
+            Ui.make_visibility "list_visibility" model_show_list.get
               (Flex
                  {
                    dir = Column;
@@ -106,7 +100,7 @@ let rec main_loop prev_ui ui widget_cache model n =
         Ui.update_ui mouse_input { keys = [] (* TODO *) } widget_cache model prev_ui
       in
       if new_model != model then (
-        Printf.printf "Updated Model: %s\n" (show_example_model new_model);
+        Printf.printf "Updated Model: %s\n" (show_model new_model);
         flush stdout)
       else ();
       let new_ui = build_ui_tree new_model in

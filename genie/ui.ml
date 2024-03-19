@@ -77,9 +77,9 @@ let rec pre_order_traversal f node =
   | Flex { dir; children; computed_size; spacing } ->
       let visited_children = List.map (fun child -> pre_order_traversal f child) children in
       Flex { dir; spacing; computed_size; children = visited_children }
-  | Visibility { id; getter; computed_size; child } -> 
+  | Visibility { id; getter; computed_size; child } ->
       let visited_child = pre_order_traversal f child in
-      Visibility { id; getter; computed_size;child = visited_child }
+      Visibility { id; getter; computed_size; child = visited_child }
   | n -> f n
 
 let rec post_order_traversal f node =
@@ -87,9 +87,9 @@ let rec post_order_traversal f node =
   | Flex { dir; children; spacing; computed_size } ->
       let visited_children = List.map (fun child -> post_order_traversal f child) children in
       f (Flex { dir; spacing; computed_size; children = visited_children })
-  | Visibility { id; getter; computed_size; child } -> 
-    let visited_child = pre_order_traversal f child in
-    f (Visibility { id; getter; computed_size;child = visited_child })
+  | Visibility { id; getter; computed_size; child } ->
+      let visited_child = pre_order_traversal f child in
+      f (Visibility { id; getter; computed_size; child = visited_child })
   | n -> f n
 
 let rec update_ui mouse keyboard widget_cache model tree =
