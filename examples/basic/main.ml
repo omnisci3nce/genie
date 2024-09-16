@@ -1,6 +1,7 @@
 open Genie
-open Maths
-open Styles
+open Genie.Maths
+open Genie.Styles
+open Genie_components
 
 [@@@warnerror "-unused-value-declaration"]
 
@@ -89,10 +90,11 @@ let _screen_height = 800
 let rec main_loop prev_ui ui state_cache model n =
   let open Input in
   (* Printf.printf "Frame %d\n" n; *)
-  match Djinn_sys.window_should_close () with
+  (* match Djinn_sys.window_should_close () with*)
+  match false with
   | true -> n
   | false ->
-      Djinn_sys.frame_begin ();
+      (* Djinn_sys.frame_begin ();*)
       (* Djinn.draw_text_string ~params:(Djinn_wrapper.text_params 400 400 "Hello!" Color.bright_blue); *)
       let mouse_input = Input.get_mouse_input () in
       (* Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout; *)
@@ -105,13 +107,13 @@ let rec main_loop prev_ui ui state_cache model n =
       Ui.layout_ui 0 0 ui;
       Ui.draw_ui ui state_cache;
 
-      Djinn_sys.frame_end ();
+      (* Djinn_sys.frame_end ();*)
       main_loop ui new_ui state_cache new_model (n + 1)
 
 let () =
-  let open Djinn_sys in
+  (* let open Djinn_sys in*)
   print_endline "I dream of Genie!\n";
-  djinn_try_init ();
+  (* djinn_try_init ();*)
   let initial_ui = build_ui_tree initial_model in
   let initial_widget_cache = Hashtbl.create 10 in
   let _ = main_loop initial_ui initial_ui initial_widget_cache initial_model 0 in

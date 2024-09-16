@@ -1,20 +1,21 @@
+open Genie
 open Ui
 open Styles
 open Color
 
-let draw_checkbox widget_id (styles : box_styles) box cache =
-  let open Maths in
-  match Hashtbl.find_opt cache widget_id with
-  | Some (Checkbox (Hovered, _)) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.hovered_color |> RGB.to_vec3)
-  | Some (Checkbox (Pressed, _)) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.pressed_color |> RGB.to_vec3)
-  | Some (Checkbox (Inactive, false)) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
-  | Some (Checkbox (Inactive, true)) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.pressed_color |> RGB.to_vec3)
-  | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
-  | _ -> ()
+let draw_checkbox widget_id (styles : box_styles) box cache = failwith "unimplemented"
+(* let open Maths in
+   match Hashtbl.find_opt cache widget_id with
+   | Some (Checkbox (Hovered, _)) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.hovered_color |> RGB.to_vec3)
+   | Some (Checkbox (Pressed, _)) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.pressed_color |> RGB.to_vec3)
+   | Some (Checkbox (Inactive, false)) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
+   | Some (Checkbox (Inactive, true)) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.pressed_color |> RGB.to_vec3)
+   | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
+   | _ -> ()*)
 
 let handle_checkbox widget_id (lens : ('model, bool) Lens.t) (mouse_input : Input.mouse_input)
     _key_input rect cache model =

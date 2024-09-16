@@ -20,10 +20,10 @@ let mouse_btn_state_transition prev cur =
 
 type mouse_input = { x : int; y : int; left_button : mouse_btn_action }
 
-let get_mouse_input () : mouse_input =
-  let mouse_pos = Djinn_wrapper.get_mouse_pos () in
-  let prev_left = Djinn_sys.get_prev_left_btn () in
-  let left = Djinn_sys.get_left_btn () in
-  let left_btn_action = mouse_btn_state_transition prev_left left in
-  (* print_endline ("Prev Left " ^ (string_of_bool prev_left) ^ "Left " ^ (string_of_bool left)); *)
-  { x = mouse_pos.x; y = mouse_pos.y; left_button = left_btn_action }
+let get_mouse_input () : mouse_input = failwith "unimplemented"
+(* let mouse_pos = Djinn_wrapper.get_mouse_pos () in
+   let prev_left = Djinn_sys.get_prev_left_btn () in
+   let left = Djinn_sys.get_left_btn () in
+   let left_btn_action = mouse_btn_state_transition prev_left left in
+   (* print_endline ("Prev Left " ^ (string_of_bool prev_left) ^ "Left " ^ (string_of_bool left)); *)
+   { x = mouse_pos.x; y = mouse_pos.y; left_button = left_btn_action }*)

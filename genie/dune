@@ -1,5 +1,7 @@
 (library
  (name genie)
- (libraries bindgen containers lens djinn_sys)
+ (libraries containers lens raylib)
  (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord)))
+  (pps ppx_deriving.show ppx_deriving.ord))
+
+ (flags (:standard -w -27)) )

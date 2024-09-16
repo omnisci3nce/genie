@@ -1,0 +1,4 @@
+(library
+    (name genie_components)
+    (libraries genie)
+    (flags (:standard -w -27)))

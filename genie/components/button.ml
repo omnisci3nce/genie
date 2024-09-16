@@ -1,19 +1,19 @@
+open Genie
 open Ui
 open Styles
-open Color
 
-let draw_button widget_id _text (styles : box_styles) box cache =
-  let open Maths in
-  (* Printf.printf "Draw widget %s with pos %d %d (width %d height %d)\n" widget_id box.x box.y box.width box.height; flush stdout; *)
-  match Hashtbl.find_opt cache widget_id with
-  | Some (Button Hovered) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.hovered_color |> RGB.to_vec3)
-  | Some (Button Pressed) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.pressed_color |> RGB.to_vec3)
-  | Some (Button Inactive) ->
-      Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
-  | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
-  | _ -> ()
+let draw_button widget_id _text (styles : box_styles) box cache = failwith "unimplemented"
+(* let open Maths in
+   (* Printf.printf "Draw widget %s with pos %d %d (width %d height %d)\n" widget_id box.x box.y box.width box.height; flush stdout; *)
+   match Hashtbl.find_opt cache widget_id with
+   | Some (Button Hovered) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.hovered_color |> RGB.to_vec3)
+   | Some (Button Pressed) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.pressed_color |> RGB.to_vec3)
+   | Some (Button Inactive) ->
+       Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
+   | None -> Draw.draw_rectangle box.x box.y box.width box.height (styles.color |> RGB.to_vec3)
+   | _ -> ()*)
 
 let str_of_interact = function
   | Inactive -> "Inactive"

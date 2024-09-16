@@ -30,6 +30,9 @@ module RGB = struct
   let to_floats c = c |> to_vec3 |> Vec3f.scalar_mul 255.0 |> Vec3f.to_tuple
 end
 
+let r (rgb : RGB.t) = rgb.r
+let g (rgb : RGB.t) = rgb.g
+let b (rgb : RGB.t) = rgb.b
 let background = Vec3f.make 0.102 0.102 0.114
 let foreground = Vec3f.make 0.902 0.886 0.941
 

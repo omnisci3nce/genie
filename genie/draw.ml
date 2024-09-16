@@ -1,13 +1,18 @@
-let draw_rectangle x y w h c =
-  let open Djinn_sys in
-  let addr = caml_box_params_of_value ~params:(Djinn_wrapper.box_params x y w h c) in
-  let ptr = { lifetime = Ocaml; addr } in
-  draw_rectangle ~params:ptr
+open Color
 
-let draw_text x y text _c =
-  let open Djinn_sys in
-  let s = make_cstr text in
-  draw_text_str ~contents:s ~y:x ~x:y
+module type Renderer = sig
+  val draw_rectangle : int -> int -> int -> int -> RGB.t -> unit
 
-(* Djinn_sys.draw_rectangle ~params:(Djinn_wrapper.box_params x y w h c) *)
-(* let draw_text _x _y _text _c = () Djinn_sys.draw_text_string ~params:(Djinn_wrapper.text_params x y text c) *)
+  (* val draw_circle : int -> int -> float -> RGB.t -> unit*)
+  val draw_text : int -> int -> string -> RGB.t -> unit
+end
+
+module RaylibRenderer : Renderer = struct
+  let color rgb = Raylib.Color.create (Color.r rgb) (Color.g rgb) (Color.b rgb) 255
+
+  let draw_rectangle x y w h c =
+    let raylib_color = color c in
+    Raylib.draw_rectangle x y w h raylib_color
+
+  let draw_text x y contents c = Raylib.draw_text contents x y 18 (color c)
+end
