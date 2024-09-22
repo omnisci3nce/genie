@@ -3,5 +3,5 @@
  (libraries containers lens raylib signal)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord))
-
- (flags (:standard -w -27)) )
+ (flags
+  (:standard -w -27)))

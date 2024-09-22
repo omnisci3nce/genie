@@ -119,4 +119,7 @@
      let _ = main_loop initial_ui initial_ui initial_widget_cache initial_model 0 in
      print_endline "Closed."*)
 
-let () = Genie.Redux.demo_app ()
+(* let () = Genie.Redux.demo_app () *)
+let () =
+  let state, builder = Genie.Redux.demo_app () in
+  Genie.Redux.demo_window state builder

@@ -1,52 +1,20 @@
-[@@@warning "-26-27-33"]
+(* [@@@warning "-26-27-33"]*)
 
 open Lens
 open Utils
 
-(*We about to refocus this beeee
-
-  State (signal) DAG
-
-  Render tree of ui_node
-  ui_nodes are constructed with a builder
-
-  A 'Component' is a function that returns a UiNode given some props
-
-  show function returns a UiNode and registers a subscriber to the signal to know when to
-  rerender ?
-
-  Example scenario:
-  State: count: int
-  Render:
-    box
-      header -> text
-      text (displays count)
-      box -> button -> text
-*)
-
-type mouse_input
-type keys_input
-type widget_cache
 type rect = { x : int; y : int; width : int; height : int }
-(* type 'a app_context = 'a ref*)
-(* type cache = unit (* widget cache and style cache *)*)
+type input (* TODO: mouse & keys *)
+type widget_cache = unit
+type interact = unit
 
-type input (* mouse & keys *)
-type interact = { input : unit; keys : unit }
-
-(** Building block of the UI, these are built-in and thus cannot really be extended by the user.
+(** Building blocks of the UI, these are built-in and thus cannot really be extended by the user.
     As you can see they are not parameterised by any user-provided type. *)
 type ui_node =
-  | Box of {
-      id : int;
-      (* TODO: mutable computed_rect : rect;*)
-      handle_interact : interact -> widget_cache -> unit;
-      children : ui_node list;
-    }
-  | Text of { (* mutable computed_rect : rect; *)
-              id : int; contents : string }
+  | Box of { id : int; handle_interact : interact -> widget_cache -> unit; children : ui_node list }
+  | Text of { id : int; contents : string }
 
-(* TODO: Flex, Vis, Custom (allow you to draw your own pixels) *)
+(* TODO: More node types: Flex, Vis, Custom (allow you to blit your own pixels) *)
 
 let rec print_ui_tree depth node =
   repeat depth (fun () -> print_char ' ');
@@ -56,64 +24,178 @@ let rec print_ui_tree depth node =
       List.iter (print_ui_tree (depth + 2)) children
   | Text { contents; _ } -> Printf.printf "text '%s'\n" contents
 
-type ('m, 'p) component = Static of ('p -> ui_node) | Dynamic of (('m, 'p) Lens.t -> ui_node)
+let g_id = ref 0
 
-(* type ('props, 'model, 'slice) component_builder =
-     (* input -> cache -> *) 'model ref -> ('model, 'slice) Lens.t option -> 'props component
+let next_id () =
+  let id = !g_id in
+  g_id := id + 1;
+  id
 
-   let build (builder: ('p, 'm, 's) component_builder) : ui_node =
-     let component: 'p component = failwith "TODO" in*)
+let box ?styles ?(interact = fun i c -> ()) children =
+  Box { id = next_id (); handle_interact = interact; children }
 
-type header_props = { text : string; size : int }
-type count_display_builder = { count : int }
+let text s = Text { id = next_id (); contents = s }
+
 type ex_model = { name : string; count : int }
+(** Example app state *)
 
-let app_builder (model : 'a ref) (lens : ('a, 'b) Lens.t) children =
-  Box { id = 0; handle_interact = (fun _ _ -> ()); children }
+type ('model, 'slice) component_builder = 'model ref -> ('model, 'slice) Lens.t -> ui_node
 
 let header_builder model_ref lens =
   let name = lens.get !model_ref in
-  Text { id = 1; contents = Format.sprintf "Hello, %s!" name }
+  text (Format.sprintf "Hello, %s!" name)
 
 let count_display_builder (model : ex_model ref) (lens : (ex_model, int) Lens.t) =
   let count = lens.get !model in
-  Text { id = 2; contents = Format.sprintf "Count: %d" count }
+  text (Format.sprintf "Count: %d" count)
 
 let increment_btn_builder model_ref lens =
-  Box { id = 3; handle_interact = (fun _i _cache -> ()); children = [] }
-
-let rec handle_interaction (model : 'm) (tree : ui_node) : unit = failwith "TODO"
+  box
+    ~interact:(fun _i _cache ->
+      let new_state = lens.set (lens.get !model_ref + 1) !model_ref in
+      model_ref := new_state)
+    [ text "Click Me" ]
 
 let demo_app () =
   let state = ref { name = "Nathan"; count = 0 } in
 
+  (* Replace this with signals? *)
   let header_lens = { get = (fun m -> m.name); set = (fun _ m -> m) } in
   let count_lens = { get = (fun m -> m.count); set = (fun v m -> { m with count = v }) } in
 
-  let build_it cur_state =
+  let build_tree cur_state =
     (* Header, Count, Increment button *)
     let header = header_builder cur_state header_lens in
     let count = count_display_builder cur_state count_lens in
-    app_builder cur_state Lens.id [ header; count ]
+    let incr_btn = increment_btn_builder cur_state count_lens in
+    box [ header; count; incr_btn ]
   in
 
-  print_endline "State Before";
-  let before = build_it state in
-  print_ui_tree 0 before;
+  (state, build_tree)
 
-  (* update the state using the count lens *)
-  state := count_lens.set 1 !state;
+let grow_rect (a : rect) (b : rect) : rect =
+  let min_x = min a.x b.x in
+  let min_y = min a.y b.y in
+  let max_x = max (a.x + a.width) (b.x + b.width) in
+  let max_y = max (a.y + a.height) (b.y + b.height) in
+  { x = min_x; y = min_y; width = max_x - min_x; height = max_y - min_y }
 
-  print_endline "State After";
-  let after = build_it state in
-  print_ui_tree 0 after;
-  ()
+let rec get_size (node : ui_node) : rect =
+  match node with
+  | Box { children; _ } ->
+      List.fold_left
+        (fun acc child -> grow_rect acc (get_size child))
+        { x = 0; y = 0; width = 0; height = 0 }
+        children
+  | Text { contents; _ } ->
+      let width = String.length contents * 30 in
+      { x = 0; y = 0; width; height = 30 }
 
-(* let box (styles : string list) children = Box { handle_interact = (fun i c -> ()); children }*)
-(* let text s = Text { contents = s }*)
+type render_cmd = R_Rect of rect * Raylib.Color.t | R_Text of rect * string
+type renderable = int * render_cmd
 
-let frame prev_interact () =
-  (* gather input *)
-  (* apply interaction *)
-  (* update render tree *)
-  ()
+let renderable_of_node rect node color =
+  match node with
+  | Box _ -> R_Rect (rect, Option.value color ~default:Raylib.Color.brown)
+  | Text { contents; _ } -> R_Text (rect, contents)
+
+module Padding = struct
+  let global_x = 40
+  let global_y = 40
+  let default_y = 5
+end
+
+let lay_out tree : renderable list =
+  (* Scuffed layout algorithm that allocates in the Y axis only *)
+  let rec single_pass_layout x y node =
+    match node with
+    | Text { id; contents } ->
+        let rect = { x; y; width = String.length contents * 30; height = 30 } in
+        [ (id, renderable_of_node rect node None) ]
+    | Box { id; children; _ } ->
+        let children_size = get_size node in
+        let box_render =
+          ( id,
+            renderable_of_node
+              { x; y; width = children_size.width; height = children_size.height }
+              node (Some Raylib.Color.orange) )
+        in
+        (* Get the size of each one and push the y variable down *)
+        let final_x, final_y, children_nodes =
+          List.fold_left
+            (fun (x, y, render_nodes) child ->
+              let child_size = get_size node in
+              let child_renders = single_pass_layout x y child in
+              (x, y + child_size.height, render_nodes @ child_renders))
+            (x, y + Padding.default_y, []) (* Extra 5 pixel padding *)
+            children
+        in
+        box_render :: children_nodes
+  in
+  single_pass_layout Padding.global_x Padding.global_y tree
+
+let draw_render_cmd = function
+  | R_Rect (rect, color) -> Raylib.draw_rectangle rect.x rect.y rect.width rect.height color
+  | R_Text (rect, str) -> Raylib.draw_text str rect.x rect.y 16 Raylib.Color.black
+
+let print_renderable (id, cmd) =
+  match cmd with
+  | R_Rect (rect, color) ->
+      Printf.printf "Rect x %d y %d c %d\n" rect.x rect.y (Raylib.color_to_int color)
+  | R_Text (rect, str) -> Printf.printf "Text x %d y %d %s\n" rect.x rect.y str
+
+let point_in_rect (x, y) rect =
+  x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height
+
+let handle_click pos renderables =
+  let open Raylib in
+  let x, y = (int_of_float (Vector2.x pos), int_of_float (Vector2.y pos)) in
+  List.find_opt
+    (fun renderable ->
+      let rect = match snd renderable with R_Rect (r, _) -> r | R_Text (r, _) -> r in
+      point_in_rect (x, y) rect)
+    renderables
+
+let rec find_node_by_id target_id node =
+  match node with
+  | Text { id; _ } -> if id = target_id then Some node else None
+  | Box { id; children; _ } ->
+      if id = target_id then Some node else List.find_map (find_node_by_id target_id) children
+
+let setup () =
+  Raylib.init_window 800 600 "genie - basic window";
+  Raylib.set_target_fps 60
+
+let rec loop (state : ex_model ref) builder =
+  if Raylib.window_should_close () then Raylib.close_window ()
+  else
+    let open Raylib in
+    begin_drawing ();
+    clear_background Color.raywhite;
+
+    let tree = builder state in
+
+    let render_list = lay_out tree in
+    render_list |> List.map snd |> List.iter draw_render_cmd;
+
+    if Raylib.is_mouse_button_released Raylib.MouseButton.Left then
+      let pos = Raylib.get_mouse_position () in
+      match handle_click pos render_list with
+      | Some hit_renderable -> (
+          let id = fst hit_renderable in
+          Printf.printf "Clicked on (id%d): " id;
+          flush stdout;
+          print_renderable hit_renderable;
+          let widget = Option.get (find_node_by_id id tree) in
+
+          match widget with Box { handle_interact; _ } -> handle_interact () () | Text _ -> ())
+      | None -> Printf.printf "No hit\n"
+    else ();
+
+    (* List.iter print_renderable render_list;*)
+    end_drawing ();
+    loop state builder
+
+let demo_window state builder =
+  setup ();
+  loop state builder

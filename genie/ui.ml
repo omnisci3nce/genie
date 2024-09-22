@@ -61,6 +61,12 @@ let print_ui_node = function
       f
   | _ as todo -> todo
 
+let grow_rect (a : rect) (b : rect) =
+  let open Vec2i in
+  let pos = min a.pos b.pos and max_pt = max (add a.pos a.extents) (add b.pos b.extents) in
+  let extents = sub max_pt pos in
+  { pos; extents }
+
 let rec get_size node =
   match node with
   | Box { computed_size; _ } -> rect_of_simple_rect computed_size
