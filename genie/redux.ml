@@ -4,7 +4,6 @@ open Lens
 open Utils
 
 type rect = { x : int; y : int; width : int; height : int }
-type input (* TODO: mouse & keys *)
 type widget_cache = unit
 type interact = unit
 
@@ -31,9 +30,11 @@ let next_id () =
   g_id := id + 1;
   id
 
+(** Convenience constructor for a Box node *)
 let box ?styles ?(interact = fun i c -> ()) children =
   Box { id = next_id (); handle_interact = interact; children }
 
+(** Convenience constructor for a Text node *)
 let text s = Text { id = next_id (); contents = s }
 
 type ex_model = { name : string; count : int }
@@ -45,8 +46,8 @@ let header_builder model_ref lens =
   let name = lens.get !model_ref in
   text (Format.sprintf "Hello, %s!" name)
 
-let count_display_builder (model : ex_model ref) (lens : (ex_model, int) Lens.t) =
-  let count = lens.get !model in
+let count_display_builder model_ref lens =
+  let count = lens.get !model_ref in
   text (Format.sprintf "Count: %d" count)
 
 let increment_btn_builder model_ref lens =
@@ -92,7 +93,7 @@ let rec get_size (node : ui_node) : rect =
       { x = 0; y = 0; width; height = 30 }
 
 type render_cmd = R_Rect of rect * Raylib.Color.t | R_Text of rect * string
-type renderable = int * render_cmd
+type renderable = int * render_cmd (* widget id, render cmd *)
 
 let renderable_of_node rect node color =
   match node with
