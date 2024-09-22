@@ -1,6 +1,6 @@
 (library
  (name genie)
- (libraries containers lens raylib)
+ (libraries containers lens raylib signal)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord))
 
