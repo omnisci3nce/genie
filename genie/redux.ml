@@ -41,6 +41,12 @@ type ex_model = { name : string; count : int }
 (** Example app state *)
 
 type ('model, 'slice) component_builder = 'model ref -> ('model, 'slice) Lens.t -> ui_node
+type 'model component = { view : 'model -> ui_node }
+
+(* brainstorming *)
+let column_component (children : string list) : unit -> unit -> ui_node =
+ fun env parent ->
+  Box { id = next_id (); handle_interact = (fun _ _ -> ()); children = List.map text children }
 
 let header_builder model_ref lens =
   let name = lens.get !model_ref in
@@ -167,14 +173,17 @@ let setup () =
   Raylib.init_window 800 600 "genie - basic window";
   Raylib.set_target_fps 60
 
-let rec loop (state : ex_model ref) builder =
+let rec loop (state : 'model ref) (printer : 'model -> unit)
+    (builder : 'model ref -> 'model component) =
   if Raylib.window_should_close () then Raylib.close_window ()
   else
     let open Raylib in
     begin_drawing ();
     clear_background Color.raywhite;
 
-    let tree = builder state in
+    let tree = (builder state).view !state in
+
+    printer !state;
 
     let render_list = lay_out tree in
     render_list |> List.map snd |> List.iter draw_render_cmd;
@@ -195,8 +204,8 @@ let rec loop (state : ex_model ref) builder =
 
     (* List.iter print_renderable render_list;*)
     end_drawing ();
-    loop state builder
+    loop state printer builder
 
-let demo_window state builder =
+let demo_window state printer builder =
   setup ();
-  loop state builder
+  loop state printer builder

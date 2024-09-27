@@ -119,7 +119,34 @@
      let _ = main_loop initial_ui initial_ui initial_widget_cache initial_model 0 in
      print_endline "Closed."*)
 
-(* let () = Genie.Redux.demo_app () *)
+[@@@warning "-26-27-32-33-34-69"]
+
+open Genie.Redux
+
+type ex_model = { todos : string list; filter : [ `All | `Active | `Completed ] }
+type env = int
+
+let text_builder s = { view = (fun _ -> text s) }
+
+let row children : 'model component =
+  { view = (fun model -> box (List.map (fun child -> child.view model) children)) }
+
+let segment set str = { view = (fun _ -> box ~interact:(fun _ _ -> set str) [ text str ]) }
+
+(** Creates a Segment Control component *)
+let segment_control (setter : string -> unit) (tabs : string list) : 'model component =
+  (* Renders each Tab in a row *)
+  row (List.map (segment setter) tabs)
+
+let app state =
+  let add_todo new_todo =
+    print_endline ("New todo " ^ new_todo);
+    state := { !state with todos = new_todo :: !state.todos }
+  in
+  let filter_control = segment_control add_todo [ "All"; "Active"; "Completed" ] in
+  filter_control
+
 let () =
-  let state, builder = Genie.Redux.demo_app () in
-  Genie.Redux.demo_window state builder
+  let init_model = { todos = [ "Do the dishes"; "Clean my desk" ]; filter = `All } in
+  let state = ref init_model in
+  Genie.Redux.demo_window state (fun m -> print_endline ("State: " ^ String.concat " " m.todos)) app
