@@ -20,7 +20,7 @@ type 'model ui_node =
   | Box of {
       id : widget_id;
       size : size_constraint;
-      mutable computed_size : simple_rect;
+      computed_size : simple_rect;
       draw : simple_rect -> state_cache -> unit;
       handle_interaction :
         Input.mouse_input -> Input.key_input -> rect -> state_cache -> 'model -> 'model;

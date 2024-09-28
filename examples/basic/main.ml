@@ -1,24 +1,4 @@
-(* open Genie
-   open Genie.Maths
-   open Genie.Styles
-   open Genie_components
-
-   [@@@warnerror "-unused-value-declaration"]
-
-   type model = { show_list : bool; topleft : bool; bottomleft : bool; right_column_btns : int list }
-   [@@deriving show, lens]
-
-   let initial_model =
-     { show_list = true; topleft = false; bottomleft = false; right_column_btns = [ 1; 2; 3; 4 ] }
-
-   let my_button_style =
-     default_box |> with_color Color.stone800 |> with_hovered_color Color.stone700
-     |> with_pressed_color Color.stone900
-
-   let red_button_style =
-     default_box |> with_color Color.red700 |> with_hovered_color Color.red800
-     |> with_pressed_color Color.red900
-
+(*
    let counter = ref 4
 
    let build_ui_tree model =
@@ -31,31 +11,6 @@
              topleft = not model.topleft;
              right_column_btns = model.right_column_btns @ [ !counter ];
            })
-     and bottomleft_btn =
-       Button.make ~text:"Remove Row" ~styles:red_button_style "btn3" (fun model ->
-           if List.length model.right_column_btns = 0 then (
-             print_endline "List is empty.";
-             model)
-           else
-             {
-               model with
-               bottomleft = not model.bottomleft;
-               right_column_btns =
-                 CCList.tail_opt model.right_column_btns |> CCOption.get_or ~default:[];
-             })
-     in
-     let right_col_btns =
-       List.map
-         (fun i ->
-           Button.make
-             ~text:(" Button " ^ string_of_int i)
-             ~styles:my_button_style (string_of_int i)
-             (fun model ->
-               let filtered = List.filter (fun btn -> btn != i) model.right_column_btns in
-               { model with right_column_btns = filtered }))
-         model.right_column_btns
-     in
-
      let test_checkbox = Checkbox.make "chkbox1" model_show_list in
      let test_text = Text.make "Show/Hide List" default_text "textid" in
      Ui.(
@@ -84,40 +39,7 @@
              ];
          })
 
-   let _screen_width = 1000
-   let _screen_height = 800
-
-   let rec main_loop prev_ui ui state_cache model n =
-     let open Input in
-     (* Printf.printf "Frame %d\n" n; *)
-     (* match Djinn_sys.window_should_close () with*)
-     match false with
-     | true -> n
-     | false ->
-         (* Djinn_sys.frame_begin ();*)
-         (* Djinn.draw_text_string ~params:(Djinn_wrapper.text_params 400 400 "Hello!" Color.bright_blue); *)
-         let mouse_input = Input.get_mouse_input () in
-         (* Printf.printf "Mouse: (%d, %d)\n" mouse_input.x mouse_input.y; flush stdout; *)
-         let new_model = Ui.update_ui mouse_input { keys = [] (* TODO *) } state_cache model prev_ui in
-         if new_model != model then (
-           Printf.printf "Updated Model: %s\n" (show_model new_model);
-           flush stdout)
-         else ();
-         let new_ui = build_ui_tree new_model in
-         Ui.layout_ui 0 0 ui;
-         Ui.draw_ui ui state_cache;
-
-         (* Djinn_sys.frame_end ();*)
-         main_loop ui new_ui state_cache new_model (n + 1)
-
-   let () =
-     (* let open Djinn_sys in*)
-     print_endline "I dream of Genie!\n";
-     (* djinn_try_init ();*)
-     let initial_ui = build_ui_tree initial_model in
-     let initial_widget_cache = Hashtbl.create 10 in
-     let _ = main_loop initial_ui initial_ui initial_widget_cache initial_model 0 in
-     print_endline "Closed."*)
+     *)
 
 [@@@warning "-26-27-32-33-34-69"]
 
@@ -129,21 +51,45 @@ type env = int
 let text_builder s = { view = (fun _ -> text s) }
 
 let row children : 'model component =
-  { view = (fun model -> box (List.map (fun child -> child.view model) children)) }
+  {
+    view =
+      (fun model ->
+        (* print_endline "Render Row";*)
+        box ~debug_label:"Row" (List.map (fun child -> child.view model) children));
+  }
 
-let segment set str = { view = (fun _ -> box ~interact:(fun _ _ -> set str) [ text str ]) }
+let segment set str =
+  {
+    view =
+      (fun _ ->
+        box ~debug_label:("Segment " ^ str)
+          ~styles:
+            {
+              margin = { left = 0; right = 0; top = 10; bottom = 10 };
+              padding = Spacing.zero;
+              color = Raylib.Color.blue;
+            }
+          ~interact:(fun int cache -> if int.mouse_was_released then set str)
+          [ text str ]);
+  }
 
 (** Creates a Segment Control component *)
 let segment_control (setter : string -> unit) (tabs : string list) : 'model component =
   (* Renders each Tab in a row *)
   row (List.map (segment setter) tabs)
 
+let filter_from_str = function
+  | "All" -> `All
+  | "Active" -> `All
+  | "Completed" -> `Completed
+  | _ -> failwith "unreachable"
+
 let app state =
-  let add_todo new_todo =
-    print_endline ("New todo " ^ new_todo);
-    state := { !state with todos = new_todo :: !state.todos }
+  let set_filter (new_filter : string) =
+    print_endline ("Set filter to " ^ new_filter);
+    state := { !state with filter = filter_from_str new_filter }
   in
-  let filter_control = segment_control add_todo [ "All"; "Active"; "Completed" ] in
+  let filter_control = segment_control set_filter [ "All"; "Active"; "Completed" ] in
   filter_control
 
 let () =
