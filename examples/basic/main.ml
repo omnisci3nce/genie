@@ -1,7 +1,9 @@
 [@@@warning "-26-27-32-33-34-37-69"]
 
 open Genie.Redux
+open Genie.Redux.Styles
 open Raylib.Color
+open CCHashtbl
 
 type todo_filter = All | Active | Completed
 type ex_model = { todos : (string * bool) list; filter : todo_filter }
@@ -14,7 +16,6 @@ let flex layout (children : 'model component list) : 'model component =
     mount = (fun _ -> ());
     view =
       (fun id c model ->
-        (* print_endline "Render Row";*)
         box ~debug_label:"Row" ~layout (List.map (fun child -> child.view None c model) children));
   }
 
@@ -38,7 +39,9 @@ module SegmentControl = struct
             ~styles:
               (default_style
               |> with_margin { left = 0; right = 0; top = 4; bottom = 4 }
-              |> with_color (if selected then white else lightgray))
+              |> with_padding { left = 10; right = 10; top = 8; bottom = 0 }
+              |> with_color (if selected then white else lightgray)
+              |> with_border_width 1.0 |> with_border_color lightgray)
             ~interact:(fun _ hit int cache ->
               if hit && int.mouse_was_released then (
                 set_index idx;
@@ -48,25 +51,25 @@ module SegmentControl = struct
 
   (** Creates a Segment Control component *)
   let make (key : StableId.t) (tabs : string list) (setter : 'a -> unit) : 'model component =
-    let init_state cache =
-      Hashtbl.add cache 88 (SegmentControl { tabs; selected_index = 0 });
-      SegmentControl { tabs; selected_index = 0 }
-    in
     {
       stable_key = Some key;
-      mount = (fun cache -> ignore (init_state cache));
+      mount = (fun _ -> ());
       view =
         (fun _ cache model ->
           let state =
-            match Hashtbl.find_opt cache 88 with Some s -> s | None -> init_state cache
+            WidgetCache.get_or_add cache
+              ~f:(fun _ -> SegmentControl { tabs; selected_index = 0 })
+              ~k:key
           in
           let state =
             match state with
             | SegmentControl s -> s
-            | _ -> failwith "Incorrect state type in cache "
+            | _ -> failwith "Found incorrect widget_state type. Expected SegmentControl"
+            (* Fallback, should not happen *)
           in
+          WidgetCache.replace cache key (SegmentControl state);
           let set_selected_index index =
-            Hashtbl.replace cache 88 (SegmentControl { state with selected_index = index })
+            WidgetCache.replace cache key (SegmentControl { state with selected_index = index })
           in
           box ~layout:Row
             (List.mapi
@@ -102,29 +105,32 @@ module Textbox = struct
   let backspace s = String.sub s 0 (String.length s - 1)
 
   (** Interaction handling for [Textbox] *)
-  let textbox_interact : int -> bool -> interact -> widget_cache -> unit =
+  let textbox_interact : StableId.t -> bool -> interact -> widget_cache -> unit =
    fun id hit interact cache ->
     let state =
-      match Hashtbl.find_opt cache 99 with
+      match WidgetCache.find_opt cache (StableId.Int 99) with
       | Some (Textbox s) -> s
       | _ -> { selected = false; text = "  placeholder   " }
     in
     (* Key handling *)
     let state =
-      if Raylib.is_key_released Backspace then { state with text = backspace state.text }
-      else
-        match Genie.Utils.get_typed_key () with
-        | Some s -> { state with text = state.text ^ s }
-        | None -> state
+      if state.selected then
+        if Raylib.is_key_released Backspace then { state with text = backspace state.text }
+        else
+          match Genie.Utils.get_typed_key () with
+          | Some s -> { state with text = state.text ^ s }
+          | None -> state
+      else state
     in
-    Hashtbl.replace cache 99 (Textbox state);
+    WidgetCache.replace cache (StableId.Int 99) (Textbox state);
     (* Mouse handling *)
     if hit && interact.mouse_was_released then (
-      Printf.printf "ID %d Clicked textbox\n" id;
+      Printf.printf "ID %s Clicked textbox\n" (StableId.to_str id);
       flush stdout;
 
       print_endline ("Set to " ^ string_of_bool (not state.selected));
-      Hashtbl.replace cache 99 (Textbox { selected = not state.selected; text = "  " }))
+      WidgetCache.replace cache (StableId.Int 99)
+        (Textbox { selected = not state.selected; text = "  " }))
     else ()
 
   let swap f g a = g (f a)
@@ -137,15 +143,18 @@ module Textbox = struct
         (fun id cache _ ->
           let key = Option.get stable_key in
           let state =
-            match Hashtbl.find_opt cache 99 with
+            match WidgetCache.find_opt cache (StableId.Int 88) with
             | Some (Textbox s) -> s
             | _ -> { selected = false; text = "  placeholder   " }
           in
           box ~debug_label:"Textbox Outer" ~interact:textbox_interact
             ~styles:
               (default_style
-              |> with_color (if state.selected then pink else lightgray)
-              |> with_margin { left = 0; right = 0; top = 20; bottom = 0 })
+              |> with_color (if state.selected then white else lightgray)
+              |> with_margin { left = 0; right = 0; top = 20; bottom = 0 }
+              |> with_padding { left = 10; right = 10; top = 10; bottom = 0 }
+              |> with_border_width 2.0
+              |> with_border_color (if state.selected then blue else lightgray))
             [ text state.text ]);
     }
 end
@@ -171,32 +180,34 @@ let filter_of_string = function
   | "Completed" -> Completed
   | _ -> failwith "Unreachable"
 
-let app state =
-  let set_filter (new_filter : string) =
-    print_endline ("Set filter to " ^ new_filter);
-    state := { !state with filter = filter_of_string new_filter }
-  in
-  let filter_control =
-    SegmentControl.make (StableId.Str "FilterControl") [ "All"; "Active"; "Completed" ] set_filter
-  in
-  let filter_str = string_of_filter !state.filter in
-  let chkbox = Checkbox.make ~stable_key:(StableId.Int 66) "visible" in
-  let textbox = Textbox.make ~stable_key:(StableId.Int 99) () in
-  let todos =
-    !state.todos
-    |> List.filter_map (fun (todo, completed) ->
-           match !state.filter with
-           | All -> Some todo
-           | Completed when completed -> Some todo
-           | Active when not completed -> Some todo
-           | _ -> None)
-    |> List.map text_builder
-  in
-  col
-    [
-      filter_control;
-      row [ col todos; col [ chkbox; text_builder ("Filter: " ^ filter_str); textbox ] ];
-    ]
+module App = struct
+  let build model =
+    let set_filter (new_filter : string) =
+      print_endline ("Set filter to " ^ new_filter);
+      model := { !model with filter = filter_of_string new_filter }
+    in
+    let filter_control =
+      SegmentControl.make (StableId.Int 88) [ "All"; "Active"; "Completed" ] set_filter
+    in
+    let filter_str = string_of_filter !model.filter in
+    let chkbox = Checkbox.make ~stable_key:(StableId.Int 66) "visible" in
+    let textbox = Textbox.make ~stable_key:(StableId.Int 99) () in
+    let visible_todos =
+      !model.todos
+      |> List.filter_map (fun (todo, completed) ->
+             match !model.filter with
+             | All -> Some todo
+             | Completed when completed -> Some todo
+             | Active when not completed -> Some todo
+             | _ -> None)
+      |> List.map text_builder
+    in
+    col
+      [
+        filter_control;
+        row [ col visible_todos; col [ chkbox; text_builder ("Filter: " ^ filter_str); textbox ] ];
+      ]
+end
 
 let () =
   let init_model =
@@ -205,4 +216,4 @@ let () =
   let state = ref init_model in
   Genie.Redux.demo_window state
     (fun m -> print_endline ("State: " ^ String.concat " " (List.map fst m.todos)))
-    app
+    App.build

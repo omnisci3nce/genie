@@ -7,15 +7,21 @@ type rect = { x : int; y : int; width : int; height : int }
 
 let zero_rect = { x = 0; y = 0; width = 0; height = 0 }
 
+type color = Raylib.Color.t
+
 module Spacing = struct
   type t = { left : int; right : int; top : int; bottom : int }
+  (** Represents margin OR padding *)
 
   let global_x = 40
   let global_y = 40
   let zero = { left = 0; right = 0; top = 0; bottom = 0 }
 end
 
-type color = Raylib.Color.t
+module Layout = struct
+  type axis_constraint = Fixed of int | PercentOfParent of float | FromTextContent of string
+  type size_constraint = { x_axis : axis_constraint; y_axis : axis_constraint }
+end
 
 type box_styles = {
   margin : Spacing.t;
@@ -25,27 +31,49 @@ type box_styles = {
   border_color : color;
 }
 
+module StableId = struct
+  type t = Int of int | Str of string | Temp of int
+
+  let to_str = function
+    | Int i -> "I#" ^ string_of_int i
+    | Str s -> "S#" ^ s
+    | Temp i -> "T#" ^ string_of_int i
+
+  let hash = function Int i -> Hashtbl.hash i | Str s -> Hashtbl.hash s | Temp i -> Hashtbl.hash i
+
+  let equal a b =
+    match (a, b) with
+    | Int i1, Int i2 -> i1 = i2
+    | Str s1, Str s2 -> s1 = s2
+    | Temp t1, Temp t2 -> t1 = t2
+    | _ -> false
+end
+
+module WidgetCache = CCHashtbl.Make (StableId)
+
 type interact = { mouse_x : int; mouse_y : int; mouse_was_released : bool; mouse_is_pressed : bool }
 type widget_state = ..
 type widget_state += Interactable of [ `Normal | `Hovered | `Pressed ]
-type widget_cache = (int, widget_state) Hashtbl.t
+type widget_cache = widget_state WidgetCache.t
 type layout_directive = Simple | Row | Column
 
 (** Building blocks of the UI, these are built-in and thus cannot really be extended by the user.
     As you can see they are not parameterised by any user-provided type. *)
 type ui_node =
   | Box of {
-      id : int;
-      computed_rect : rect ref;
+      id : StableId.t;
       debug_label : string option;
+      computed_rect : rect ref;
       layout : layout_directive;
       styles : box_styles;
-      handle_interact : int -> bool -> interact -> widget_cache -> unit;
+      handle_interact : StableId.t -> bool -> interact -> widget_cache -> unit;
       children : ui_node list;
     }
-  | Text of { id : int; color : color; contents : string }
+  | Text of { id : StableId.t; color : color; contents : string }
 
-(* TODO: More node types: Flex, Vis, Custom (allow you to blit your own pixels) *)
+(* type computed_node = { id : StableId.t; widget : ui_node }*)
+
+(* TODO: More node types: Vis, Custom (allow you to blit your own pixels) *)
 
 let rec print_ui_tree depth node =
   repeat depth (fun () -> print_char ' ');
@@ -59,21 +87,26 @@ let g_id = ref 0
 
 let next_id () =
   incr g_id;
-  !g_id
+  StableId.Int !g_id
 
-let default_style =
-  {
-    margin = Spacing.zero;
-    padding = Spacing.zero;
-    color = Raylib.Color.orange;
-    border_width = 0.0;
-    border_color = Raylib.Color.black;
-  }
+module Styles = struct
+  let default_style =
+    {
+      margin = Spacing.zero;
+      padding = Spacing.zero;
+      color = Raylib.Color.orange;
+      border_width = 0.0;
+      border_color = Raylib.Color.black;
+    }
 
-let with_margin margin b = { b with margin }
-let with_color color b = { b with color }
-let with_border_width border_width b = { b with border_width }
-let with_border_color border_color b = { b with border_color }
+  let with_margin margin b = { b with margin }
+  let with_padding padding b = { b with padding }
+  let with_color color b = { b with color }
+  let with_border_width border_width b = { b with border_width }
+  let with_border_color border_color b = { b with border_color }
+end
+
+open Styles
 
 (** Convenience constructor for a Box node *)
 let box ?debug_label ?styles ?(interact = fun id hit i c -> ()) ?(layout = Simple) children =
@@ -90,10 +123,6 @@ let box ?debug_label ?styles ?(interact = fun id hit i c -> ()) ?(layout = Simpl
 
 (** Convenience constructor for a Text node *)
 let text ?(color = Raylib.Color.black) s = Text { id = next_id (); color; contents = s }
-
-module StableId = struct
-  type t = Int of int | Str of string
-end
 
 type 'model component = {
   stable_key : StableId.t option;
@@ -124,7 +153,16 @@ let rec get_size (node : ui_node) : rect =
           (0, 0) children
       in
       (* The size of a box is the size of its children + its margin *)
-      { x = 0; y = 0; width; height = height + styles.margin.top + styles.margin.bottom }
+      {
+        x = 0;
+        y = 0;
+        width =
+          width + styles.margin.left + styles.margin.right + styles.padding.left
+          + styles.padding.right;
+        height =
+          height + styles.margin.top + styles.margin.bottom + styles.padding.top
+          + styles.padding.bottom;
+      }
   | Text { contents; _ } ->
       let width = String.length contents * 10 in
       { x = 0; y = 0; width; height = 30 }
@@ -137,7 +175,7 @@ type render_cmd =
   | R_Outline of rect * Raylib.Color.t
   | R_Text of rect * string * Raylib.Color.t
 
-type renderable = int * render_cmd (* widget id, render cmd *)
+type renderable = StableId.t * render_cmd (* widget id, render cmd *)
 
 let renderables_of_node rect node color =
   match node with
@@ -145,7 +183,7 @@ let renderables_of_node rect node color =
       let bg = R_Rect (rect, Option.value color ~default:Raylib.Color.brown) in
       if styles.border_width > 0.0 then
         let border = R_Outline (rect, styles.border_color) in
-        [ border; bg ]
+        [ bg; border ]
       else [ bg ]
   | Text { contents; color; _ } -> [ R_Text (rect, contents, color) ]
 
@@ -169,6 +207,9 @@ let lay_out tree : renderable list =
         let box_renders =
           renderables_of_node box_rect node (Some styles.color) |> List.map (fun r -> (id, r))
         in
+        let child_start_x = box_x + styles.padding.left in
+        let child_start_y = box_y + styles.padding.top in
+
         (* Get the size of each one  *)
         let final_x, final_y, children_nodes =
           List.fold_left
@@ -178,7 +219,8 @@ let lay_out tree : renderable list =
               match layout with
               | Simple | Column -> (cx, cy + child_size.height, render_nodes @ child_renders)
               | Row -> (cx + child_size.width, cy, render_nodes @ child_renders))
-            (box_x, box_y, []) children
+            (child_start_x, child_start_y, [])
+            children
         in
         box_renders @ children_nodes
   in
@@ -197,7 +239,7 @@ let rec interact_tree interaction widget_cache node =
           if interaction.mouse_is_pressed then Interactable `Pressed else Interactable `Hovered
         else Interactable `Normal
       in
-      Hashtbl.replace widget_cache id new_state;
+      WidgetCache.replace widget_cache id new_state;
       List.iter (interact_tree interaction widget_cache) children
   | Text _ -> () (* Text doesnt have interactions yet *)
 
@@ -211,18 +253,22 @@ let draw_render_cmd ?(debug = false) font widget_cache (id, node) =
   match node with
   | R_Rect (rect, color) ->
       let color =
-        Hashtbl.find_opt widget_cache id |> Option.map (color_for_state color) |> Option.get
+        WidgetCache.find_opt widget_cache id |> Option.map (color_for_state color) |> Option.get
       in
       Raylib.draw_rectangle rect.x rect.y rect.width rect.height color;
-      if debug then
+      if debug then (
         Printf.printf "X %d Y %d Width %d Height %d\n" rect.x rect.y rect.width rect.height;
-      Raylib.draw_rectangle_lines rect.x rect.y rect.width rect.height Raylib.Color.black
+        Raylib.draw_rectangle_lines rect.x rect.y rect.width rect.height Raylib.Color.black)
   | R_Outline (rect, color) ->
-      Raylib.draw_rectangle_lines rect.x rect.y rect.width rect.height color
+      let rrect =
+        Raylib.Rectangle.create (float_of_int rect.x) (float_of_int rect.y)
+          (float_of_int rect.width) (float_of_int rect.height)
+      in
+      Raylib.draw_rectangle_lines_ex rrect 1.0 color
   | R_Text (rect, str, color) ->
       Raylib.draw_text_ex font str
         (Raylib.Vector2.create (float_of_int rect.x) (float_of_int rect.y))
-        20. 0.0 color
+        18. 0.0 color
 
 let print_renderable (id, cmd) =
   match cmd with
@@ -253,7 +299,7 @@ let rec find_node_by_id target_id node =
 let setup () =
   Raylib.init_window 600 600 "genie - basic window";
   Raylib.set_target_fps 60;
-  Raylib.load_font "./Inter-Regular.ttf"
+  Raylib.load_font_ex "./Inter-Regular.ttf" 36 None
 
 let rec loop font (state : 'model ref) widget_cache (printer : 'model -> unit)
     (builder : 'model ref -> 'model component) =
@@ -301,7 +347,7 @@ let rec loop font (state : 'model ref) widget_cache (printer : 'model -> unit)
 
 let demo_window state printer builder =
   let font = setup () in
-  let w_cache = Hashtbl.create 10 in
+  let w_cache = WidgetCache.create 10 in
 
   (builder state).mount w_cache;
 
