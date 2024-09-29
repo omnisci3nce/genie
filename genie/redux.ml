@@ -331,38 +331,14 @@ module Layout = struct
     let visited_node = f node in
     (* We call our function on the current node first *)
     match visited_node with
-    | Box { id; debug_label; computed_rect; size; layout; styles; handle_interact; children } as b
-      ->
-        Box
-          {
-            id;
-            debug_label;
-            computed_rect;
-            size;
-            layout;
-            styles;
-            handle_interact;
-            children = List.map (pre_order_traversal f) children;
-          }
-    | other -> f other
+    | Box b -> Box { b with children = List.map (pre_order_traversal f) b.children }
+    | other -> other
 
   let rec post_order_traversal f node =
     match node with
-    | Box { id; debug_label; computed_rect; size; layout; styles; handle_interact; children } as b
-      ->
-        let visited_children = List.map (post_order_traversal f) children in
-        f
-          (Box
-             {
-               id;
-               debug_label;
-               computed_rect;
-               size;
-               layout;
-               styles;
-               handle_interact;
-               children = visited_children;
-             })
+    | Box b ->
+        let visited_children = List.map (post_order_traversal f) b.children in
+        f (Box { b with children = visited_children })
     | other -> f other
 
   let apply_fixed = function
