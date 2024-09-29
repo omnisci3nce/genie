@@ -348,7 +348,6 @@ module Layout = struct
         let width = CCOption.get_or ~default:!r.width (computed_span b.size.x_axis) in
         let height = CCOption.get_or ~default:!r.height (computed_span b.size.y_axis) in
         r := { !r with width; height };
-        (* print_rect !r;*)
         Box b
     | other -> other
 
@@ -359,23 +358,19 @@ module Layout = struct
     (* TODO: Step 2 *)
     tree
 end
-
-let rec interact_tree interaction widget_cache node =
-  match node with
-  | Box { id; styles; computed_rect; handle_interact; children; _ } ->
-      let box_rect = !computed_rect in
-      let x, y = (interaction.mouse_x, interaction.mouse_y) in
+(** Recursively tries to handle interactions for the ui tree *)
+let rec interact_tree interaction widget_cache = function
+  | Box { id; computed_rect; handle_interact; children; _ } ->
+      let hit = point_in_rect (interaction.mouse_x, interaction.mouse_y) !computed_rect in
       let new_state =
-        (* hit test *)
-        let hit_test = point_in_rect (x, y) box_rect in
-        let _ = handle_interact id ~hit:hit_test interaction widget_cache in
-        if hit_test then
-          if interaction.mouse_is_pressed then Interactable `Pressed else Interactable `Hovered
+        handle_interact id ~hit interaction widget_cache |> ignore;
+        if hit then
+          Interactable (if interaction.mouse_is_pressed then `Pressed else `Hovered)
         else Interactable `Normal
       in
       WidgetCache.replace widget_cache id new_state;
       List.iter (interact_tree interaction widget_cache) children
-  | Text _ -> () (* Text doesnt have interactions yet *)
+  | Text _ -> ()
 
 let draw_render_cmd ?(debug = false) reg_font bold_font widget_cache (id, node) =
   match node with
