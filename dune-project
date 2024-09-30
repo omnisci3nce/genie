@@ -19,7 +19,7 @@
  (name genie)
  (synopsis "Simple GUI framwork in OCaml")
  (description "A longer description")
- (depends ocaml dune bindgen containers ppx_deriving)
+ (depends ocaml dune containers lens raylib ppx_deriving signal)
  (tags
   (topics "to describe" your project)))
 

@@ -56,9 +56,13 @@ module Styles = struct
   let bg_color color b = { b with color }
   let border_width border_width b = { b with border_width }
   let border_color border_color b = { b with border_color }
+  let hover_color color b = { b with hover_color = Some color}
+  let pressed_color color b = { b with pressed_color = Some color}
 end
 
 open Styles
+
+(* Styles are fundamentally connected to layout with widths, etc  *)
 
 module Design = struct
   type space_token = S_Xs | S_Sm | S_Md | S_Lg | S_Xl
@@ -270,10 +274,15 @@ type render_cmd =
 
 type renderable = StableId.t * render_cmd (* widget id, render cmd *)
 
-let renderables_of_node rect node color =
+let renderables_of_node rect node color widget_state =
   match node with
-  | Box { styles; _ } ->
-      let bg = R_Rect (rect, Option.value color ~default:Raylib.Color.brown) in
+  | Box { id; styles; _ } ->
+    let bg_color = match widget_state with
+    | Some (Interactable `Hovered) -> Option.value styles.hover_color ~default:color
+    | Some (Interactable `Pressed) ->Option.value styles.hover_color ~default:color
+      | _ -> color in
+
+      let bg = R_Rect (rect, color) in
       if styles.border_width > 0.0 then
         let border = R_Outline (rect, styles.border_color) in
         [ bg; border ]
@@ -281,13 +290,13 @@ let renderables_of_node rect node color =
   | Text { contents; color; styles; _ } -> [ R_Text (rect, contents, color, styles.weight) ]
 
 module Layout = struct
-  let lay_out tree : renderable list =
+  let lay_out cache tree : renderable list =
     (* Scuffed layout algorithm that allocates in the Y axis only *)
     let rec single_pass_layout x y node =
       match node with
       | Text { id; contents; color; _ } ->
           let rect = { x; y; width = String.length contents * 30; height = 30 } in
-          renderables_of_node rect node (Some color) |> List.map (fun r -> (id, r))
+          renderables_of_node rect node color None |> List.map (fun r -> (id, r))
       | Box { id; layout; size; styles; children; computed_rect; _ } ->
           let children_size = get_size node in
 
@@ -307,8 +316,9 @@ module Layout = struct
             { x = box_x; y = box_y; width = box_draw_width; height = box_draw_height }
           in
           computed_rect := box_rect;
+          let widget_state = WidgetCache.find_opt cache id in
           let box_renders =
-            renderables_of_node box_rect node (Some styles.color) |> List.map (fun r -> (id, r))
+            renderables_of_node box_rect node styles.color widget_state |> List.map (fun r -> (id, r))
           in
 
           (* Get the size of each one  *)
@@ -465,7 +475,7 @@ module App = struct
 
         let tree = (builder genie.theme state).view None genie.theme genie.cache !state in
 
-        let render_list = tree |> Layout.layout_ui (600, 500) |> Layout.lay_out in
+        let render_list = tree |> Layout.layout_ui (600, 500) |> Layout.lay_out genie.cache in
         interact_tree interaction genie.cache tree;
         flush stdout;
         render_list
@@ -500,7 +510,7 @@ let text_builder ?(color = Raylib.Color.black) ?(weight = Regular) s =
 let box_builder children =
   { stable_key = None; mount = (fun _ -> ()); view = (fun _ _ _ _ -> box children) }
 
-let list_item onlick s =
+let list_item ?(styles = default_style) onlick s =
   {
     stable_key = None;
     mount = (fun _ -> ());
@@ -508,6 +518,7 @@ let list_item onlick s =
       (fun _ theme _ _ ->
         let module Theme = (val theme : Design.Theme) in
         box
+          ~styles
           ~interact:(fun id ~hit i _ ->
             if hit && i.mouse_was_released then onlick ();
             Some ())

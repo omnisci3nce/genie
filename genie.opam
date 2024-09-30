@@ -12,9 +12,11 @@ bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.14"}
-  "bindgen"
   "containers"
+  "lens"
+  "raylib"
   "ppx_deriving"
+  "signal"
   "odoc" {with-doc}
 ]
 build: [
@@ -32,6 +34,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/username/reponame.git"
-pin-depends: [
-  ["bindgen.dev" "git+https://github.com/omnisci3nce/ocaml-bindgen.git"]
-]

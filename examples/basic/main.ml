@@ -22,6 +22,8 @@ module ChatApp = struct
         (List.mapi
            (fun index ch_name ->
              list_item
+               ~styles:
+                 (default_style |> bg_color (Theme.neutral C_5) |> hover_color (Theme.neutral C_3))
                (fun () ->
                  Printf.printf "Selected channel %s\n" ch_name;
                  model := { !model with selected_channel = Some index })
