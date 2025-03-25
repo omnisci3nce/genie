@@ -68,7 +68,19 @@ end
 module Textbox = struct
   (* Reference material: https://rxi.github.io/textbox_behaviour.html *)
 
-  type textbox_internal_state = { focused : bool; text_buffer : string; selection : int * int }
+  type textbox_internal_state = {
+    focused : bool;
+    dirtied : bool;
+    text_buffer : string;
+    selection : int * int;
+  }
+
+  type widget_state +=
+    | Textbox of textbox_internal_state
+          (** This is the state that gets stored in the widget_cache *)
+
+  let default_state () =
+    { focused = false; dirtied = false; text_buffer = "  placeholder   "; selection = (0, 0) }
 
   let handle_movement ({ selection = head, tail; text_buffer; _ } as s) =
     let length = String.length text_buffer in
@@ -79,21 +91,19 @@ module Textbox = struct
     | `Start -> s (* TODO *)
     | `End -> s (* TODO *)
 
-  type widget_state +=
-    | Textbox of textbox_internal_state
-          (** This is the state that gets stored in the widget_cache *)
-
   type t
 
   let backspace s = String.sub s 0 (String.length s - 1)
 
   (** Interaction handling for [Textbox] *)
   let textbox_interact id ~hit interact cache =
+    Printf.printf "textbox interact for id %s\n" (StableId.to_str id);
     let state =
-      match WidgetCache.find_opt cache (StableId.Int 99) with
-      | Some (Textbox s) -> s
-      | _ -> { focused = false; text_buffer = "  placeholder   "; selection = (0, 0) }
+      match WidgetCache.find_opt cache id with
+      | Some (Textbox t) -> t
+      | _ -> default_state () (* Use default state if not found *)
     in
+
     (* Key handling *)
     let state =
       if state.focused then
@@ -105,17 +115,18 @@ module Textbox = struct
           | None -> state
       else state
     in
-    WidgetCache.replace cache (StableId.Int 99) (Textbox state);
+    WidgetCache.replace cache id (Textbox state);
     (* Mouse handling *)
     if hit && interact.mouse_was_released then (
       Printf.printf "ID %s Clicked textbox\n" (StableId.to_str id);
 
       print_endline ("Set to " ^ string_of_bool (not state.focused));
-      WidgetCache.replace cache (StableId.Int 99)
+      WidgetCache.replace cache id
         (Textbox
            {
              selection = (0, 0);
              focused = not state.focused;
+             dirtied = true;
              text_buffer = (if state.focused then state.text_buffer else "  ");
            });
       Some ())
@@ -123,26 +134,28 @@ module Textbox = struct
 
   let swap f g a = g (f a)
 
-  let make ?stable_key () : 'model component =
+  let make ~stable_key ~placeholder () : 'model component =
     {
-      stable_key;
+      stable_key = Some stable_key;
       mount = (fun _ -> ());
       view =
-        (fun id _theme cache _ ->
-          let _key = Option.get stable_key in
+        (fun id theme cache _ ->
+          let module Theme = (val theme : Design.Theme) in
+          Printf.printf "Get state for id %s\n" (StableId.to_str stable_key);
           let state =
-            match WidgetCache.find_opt cache (StableId.Int 99) with
-            | Some (Textbox s) -> s
-            | _ -> { focused = false; text_buffer = "  placeholder   "; selection = (0, 0) }
+            match WidgetCache.find_opt cache stable_key with
+            | Some (Textbox t) -> t
+            | _ -> default_state () (* Use default state if not found *)
           in
-          box ~debug_label:"Textbox Outer" ~interact:textbox_interact
+          box ~id:stable_key ~debug_label:"Textbox Outer" ~interact:textbox_interact
             ~styles:
               (default_style
-              |> bg_color (if state.focused then white else lightgray)
+              |> bg_color (if state.focused then Theme.neutral C_1 else Theme.neutral C_3)
+              |> hover_color (Theme.neutral C_4)
               |> margin { left = 0; right = 0; top = 20; bottom = 0 }
               |> padding { left = 10; right = 10; top = 10; bottom = 0 }
               |> border_width 2.0
-              |> border_color (if state.focused then blue else lightgray))
+              |> border_color (if state.focused then blue else Theme.neutral C_6))
             [ text state.text_buffer ]);
     }
 end

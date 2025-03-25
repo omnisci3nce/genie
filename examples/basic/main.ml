@@ -23,7 +23,11 @@ module ChatApp = struct
            (fun index ch_name ->
              list_item
                ~styles:
-                 (default_style |> bg_color (Theme.neutral C_5) |> hover_color (Theme.neutral C_3))
+                 (default_style
+                 |> padding (Spacing.merge (Theme.hori_space S_Sm) (Theme.vert_space S_Xs))
+                 |> bg_color (Theme.neutral C_5)
+                 |> hover_color (Theme.neutral C_3))
+               (!model.selected_channel = Some index)
                (fun () ->
                  Printf.printf "Selected channel %s\n" ch_name;
                  model := { !model with selected_channel = Some index })
@@ -46,13 +50,20 @@ module ChatApp = struct
         ~styles:(default_style |> bg_color blue)
         (List.map (fun msg -> text_builder msg.contents) messages)
     in
-    let new_message_form = Textbox.make ~stable_key:(StableId.Str "MsgForm") () in
+    let new_message_form =
+      Textbox.make ~stable_key:(StableId.Int 666) ~placeholder:" IHIHI Placeholder   " ()
+    in
     let header =
       !model.selected_channel
       |> Option.map (fun idx -> List.nth !model.channels idx)
       |> Option.value ~default:"" |> text_builder ~weight:Bold
     in
-    let main_area = col [ header; message_list; new_message_form ] in
+    let main_area =
+      col
+        ~styles:
+          (default_style |> padding @@ Spacing.merge (Theme.hori_space S_Lg) (Theme.vert_space S_Md))
+        [ header; message_list; new_message_form ]
+    in
     row ~styles:(default_style |> bg_color orange) [ sidebar; main_area ]
 end
 

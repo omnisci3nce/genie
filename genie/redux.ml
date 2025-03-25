@@ -56,8 +56,8 @@ module Styles = struct
   let bg_color color b = { b with color }
   let border_width border_width b = { b with border_width }
   let border_color border_color b = { b with border_color }
-  let hover_color color b = { b with hover_color = Some color}
-  let pressed_color color b = { b with pressed_color = Some color}
+  let hover_color color b = { b with hover_color = Some color }
+  let pressed_color color b = { b with pressed_color = Some color }
 end
 
 open Styles
@@ -76,7 +76,8 @@ module Design = struct
     val vert_space : space_token -> Spacing.t
   end
 
-  (** Provides the necessary user-provided functions to convert from design tokens to concrete values *)
+  (** Provides the necessary user-provided functions to convert from design tokens to concrete
+      values *)
   module type ThemeBuilder = sig
     val token_to_spacing : space_token -> int
     val neutral_to_color : scale_value -> string
@@ -136,8 +137,8 @@ type axis_constraint = Auto | Fixed of int | PercentOfParent of float
 type size_constraint = { x_axis : axis_constraint; y_axis : axis_constraint }
 type layout_directive = Simple | Row | Column
 
-(** Building blocks of the UI, these are built-in and thus cannot really be extended by the user.
-    As you can see they are not parameterised by any user-provided type. *)
+(** Building blocks of the UI, these are built-in and thus cannot really be extended by the user. As
+    you can see they are not parameterised by any user-provided type. *)
 type ui_node =
   | Box of {
       id : StableId.t;
@@ -147,7 +148,8 @@ type ui_node =
       layout : layout_directive;
       styles : box_styles;
       handle_interact : StableId.t -> hit:bool -> interact -> WidgetCache.t -> unit option;
-          (** Id -> was node hit? -> interaction data -> widget cache -> Return Some when you want to consume the event, else None *)
+          (** Id -> was node hit? -> interaction data -> widget cache -> Return Some when you want
+              to consume the event, else None *)
       children : ui_node list;
     }
   | Text of { id : StableId.t; color : color; styles : text_styles; contents : string }
@@ -199,11 +201,11 @@ end
 module DefaultTheme = Design.MakeTheme (BaseTheme)
 
 (** Convenience constructor for a Box node *)
-let box ?debug_label ?styles ?(size = { x_axis = Auto; y_axis = Auto })
+let box ?id ?debug_label ?styles ?(size = { x_axis = Auto; y_axis = Auto })
     ?(interact = fun id ~hit i c -> None) ?(layout = Simple) children =
   Box
     {
-      id = next_id ();
+      id = CCOption.get_or ~default:(next_id ()) id;
       debug_label;
       computed_rect = ref zero_rect;
       size;
@@ -277,12 +279,20 @@ type renderable = StableId.t * render_cmd (* widget id, render cmd *)
 let renderables_of_node rect node color widget_state =
   match node with
   | Box { id; styles; _ } ->
-    let bg_color = match widget_state with
-    | Some (Interactable `Hovered) -> Option.value styles.hover_color ~default:color
-    | Some (Interactable `Pressed) ->Option.value styles.hover_color ~default:color
-      | _ -> color in
+      let bg_color =
+        match widget_state with
+        | Some (Interactable `Hovered) ->
+            (* Printf.printf "id %s hovered\n" (StableId.to_str id);*)
+            Option.value styles.hover_color ~default:color
+        | Some (Interactable `Pressed) ->
+            (* Printf.printf "id %s pressed\n" (StableId.to_str id);*)
+            Option.value styles.hover_color ~default:color
+        | _ ->
+            (* Printf.printf "id %s normal\n" (StableId.to_str id);*)
+            color
+      in
 
-      let bg = R_Rect (rect, color) in
+      let bg = R_Rect (rect, bg_color) in
       if styles.border_width > 0.0 then
         let border = R_Outline (rect, styles.border_color) in
         [ bg; border ]
@@ -296,7 +306,8 @@ module Layout = struct
       match node with
       | Text { id; contents; color; _ } ->
           let rect = { x; y; width = String.length contents * 30; height = 30 } in
-          renderables_of_node rect node color None |> List.map (fun r -> (id, r))
+          let widget_state = WidgetCache.find_opt cache id in
+          renderables_of_node rect node color widget_state |> List.map (fun r -> (id, r))
       | Box { id; layout; size; styles; children; computed_rect; _ } ->
           let children_size = get_size node in
 
@@ -318,7 +329,8 @@ module Layout = struct
           computed_rect := box_rect;
           let widget_state = WidgetCache.find_opt cache id in
           let box_renders =
-            renderables_of_node box_rect node styles.color widget_state |> List.map (fun r -> (id, r))
+            renderables_of_node box_rect node styles.color widget_state
+            |> List.map (fun r -> (id, r))
           in
 
           (* Get the size of each one  *)
@@ -368,14 +380,14 @@ module Layout = struct
     (* TODO: Step 2 *)
     tree
 end
+
 (** Recursively tries to handle interactions for the ui tree *)
 let rec interact_tree interaction widget_cache = function
   | Box { id; computed_rect; handle_interact; children; _ } ->
       let hit = point_in_rect (interaction.mouse_x, interaction.mouse_y) !computed_rect in
       let new_state =
         handle_interact id ~hit interaction widget_cache |> ignore;
-        if hit then
-          Interactable (if interaction.mouse_is_pressed then `Pressed else `Hovered)
+        if hit then Interactable (if interaction.mouse_is_pressed then `Pressed else `Hovered)
         else Interactable `Normal
       in
       WidgetCache.replace widget_cache id new_state;
@@ -477,24 +489,10 @@ module App = struct
 
         let render_list = tree |> Layout.layout_ui (600, 500) |> Layout.lay_out genie.cache in
         interact_tree interaction genie.cache tree;
-        flush stdout;
         render_list
-        |> List.iter (draw_render_cmd ~debug:true genie.regular_font genie.bold_font genie.cache);
+        |> List.iter (draw_render_cmd ~debug:false genie.regular_font genie.bold_font genie.cache);
 
-        if Raylib.is_mouse_button_released Raylib.MouseButton.Left then
-          match handle_click mouse_pos render_list with
-          | Some hit_renderable -> (
-              let id = fst hit_renderable in
-              print_renderable hit_renderable;
-              let widget = Option.get (find_node_by_id id tree) in
-
-              match widget with
-              | Box { id; handle_interact; _ } ->
-                  handle_interact id true interaction genie.cache |> ignore
-              | Text _ -> ())
-          | None -> Printf.printf "No hit\n"
-        else ();
-
+        (* List.iter print_renderable render_list;*)
         end_drawing ();
 
         loop genie state printer builder
@@ -510,19 +508,18 @@ let text_builder ?(color = Raylib.Color.black) ?(weight = Regular) s =
 let box_builder children =
   { stable_key = None; mount = (fun _ -> ()); view = (fun _ _ _ _ -> box children) }
 
-let list_item ?(styles = default_style) onlick s =
+let list_item ?(styles = default_style) active onlick s =
   {
     stable_key = None;
     mount = (fun _ -> ());
     view =
       (fun _ theme _ _ ->
         let module Theme = (val theme : Design.Theme) in
-        box
-          ~styles
+        box ~styles
           ~interact:(fun id ~hit i _ ->
             if hit && i.mouse_was_released then onlick ();
             Some ())
-          [ text s ]);
+          [ text ~weight:(if active then Bold else Regular) s ]);
   }
 
 let flex ~styles ~size layout (children : 'model component list) : 'model component =
